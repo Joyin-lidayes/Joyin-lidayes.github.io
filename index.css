@@ -70,6 +70,12 @@
     margin-left: 75px;
 }
 
+#foot {
+    margin-top: 20px;
+    margin-left: 75px;
+    padding-left: 20px;
+}
+
 .gList {
     width: 220px;
     margin-top: 5px;
