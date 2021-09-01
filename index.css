@@ -1,0 +1,77 @@
+.header {
+    margin-left: 30px;
+    margin-top: 5px;
+}
+
+.searchBox {
+    width: 300px;
+    height: 120px;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    margin-top: 15px;
+    background-color: #cccccc;
+    border-radius: 10px;
+}
+
+.input {
+    padding-top: 5%;
+    padding-left: 20%;
+}
+
+.gameName {
+    width: 190px;
+    height: 30px;
+    padding-left: 50px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.search {
+    width: 60px;
+    height: 25px;
+    border-radius: 4px;
+    margin-left: 65px;
+}
+
+.allGame {
+    width: 80px;
+    height: 20px;
+    margin-top: 10px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.classGame {
+    width: 80px;
+    height: 20px;
+    margin-top: 10px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+#reflash {
+    margin-left: 128px;
+    color: red;
+}
+
+#showGame {
+    margin-top: 10px;
+    margin: 0 auto;
+    width: 300px;
+    height: 120px;
+}
+
+#headert {
+    margin-left: 50px;
+}
+
+#footer {
+    margin-top: 20px;
+    margin-left: 75px;
+}
+
+.gList {
+    width: 220px;
+    margin-top: 5px;
+    padding-left: 75px;
+}
