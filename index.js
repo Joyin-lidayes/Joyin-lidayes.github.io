@@ -29,6 +29,12 @@ function searchGameByName() {
     if (gameName == "") {
         alert("未输入内容！");
     } else {
+        if (document.getElementById("game")) {
+            document.getElementById("game").remove();
+        }
+        if (document.getElementById("foot")) {
+            document.getElementById("foot").remove();
+        }
         var bodyFa = document.getElementById("showGame"); //通过id号获取frameLi 的父类
         var res = fuzzyQuery(allGame, gameName);
         if (res.length == 0) {
