@@ -77,7 +77,10 @@
 }
 
 .gList {
+    color: black;
     width: 220px;
     margin-top: 5px;
     padding-left: 75px;
+    list-style-type: decimal;
+    list-style-position: inside;
 }
