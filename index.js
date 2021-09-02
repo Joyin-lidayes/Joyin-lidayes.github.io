@@ -46,6 +46,7 @@ function searchGameByName() {
                 frameLi.setAttribute("class", "gList");
                 var gameUrl = document.createElement("a");
                 gameUrl.setAttribute("href", temp[2]);
+                gameUrl.setAttribute("class", "urla");
                 frameLi.appendChild(gameUrl);
                 frameUl.appendChild(frameLi);
                 gameUrl.innerHTML = temp[1];

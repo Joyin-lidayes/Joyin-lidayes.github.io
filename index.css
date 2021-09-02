@@ -80,7 +80,11 @@
     color: black;
     width: 220px;
     margin-top: 5px;
-    padding-left: 75px;
+    padding-left: 50px;
     list-style-type: decimal;
     list-style-position: inside;
+}
+
+.urla {
+    border-bottom: 1px solid black;
 }
