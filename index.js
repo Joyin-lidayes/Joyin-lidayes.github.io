@@ -14,10 +14,21 @@ document.onkeydown = function(e) { // 回车提交表单
  * @return int          返回的结果
  */
 function randomRange(min = 0, max = allGame.length - 1) {
-    return ~~(Math.random() * (max - min + 1)) + min
+    return ~~(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+    for (var i = arr.length - 1; i >= 0; i--) {
+        var randomIndex = Math.floor(Math.random() * (i + 1));
+        var itemAtIndex = arr[randomIndex];　　　　
+        arr[randomIndex] = arr[i];　　　　
+        arr[i] = itemAtIndex;
+    }　　
+    return arr;
 }
 
 function setUI(res) {
+    flag = 0;
     if (document.getElementById("game")) {
         document.getElementById("game").remove();
     }
@@ -34,7 +45,14 @@ function setUI(res) {
         var frameUl = document.createElement("ul");
         frameUl.setAttribute("id", "game");
         bodyFa.appendChild(frameUl);
+        if (res.length >= 300) {
+            res = shuffle(res);
+        }
         for (var i = 0; i < res.length; i++) {
+            if (i >= 300) {
+                flag = 1;
+                break;
+            }
             var temp = res[i].split(",");
             var frameLi = document.createElement("li");
             frameLi.setAttribute("class", "gList");
@@ -48,7 +66,11 @@ function setUI(res) {
         var foot = document.createElement("h3");
         foot.setAttribute("id", "footer");
         frameUl.appendChild(foot);
-        foot.innerHTML = "已经到底了！！";
+        if (flag = 0) {
+            foot.innerHTML = "已经到底了！！";
+        } else {
+            foot.innerHTML = "受性能限制<br>最多显示300条结果<br>多刷新几次试试吧";
+        }
     }
 
 }
@@ -56,12 +78,14 @@ function setUI(res) {
 /**
  * 随机生成在游戏目录区间的随机数
  * @param  randomList  最随机数列表，默认0
+ * @param  item        产生随机数数目
  * @return None        返回的结果
  */
 
 function randomGame() {
+    item = 15;
     randomIt = [];
-    for (var i = 0; i < 15; i++) {
+    for (var i = 0; i < item; i++) {
         temp = allGame[randomRange()];
         randomIt.push(temp);
     }
