@@ -28,7 +28,6 @@ function shuffle(arr) {
 }
 
 function setUI(res) {
-    flag = false;
     if (document.getElementById("game")) {
         document.getElementById("game").remove();
     }
@@ -47,7 +46,6 @@ function setUI(res) {
         bodyFa.appendChild(frameUl);
         if (res.length >= 300) {
             res = shuffle(res);
-            flag = true;
         }
         for (var i = 0; i < res.length; i++) {
             if (i >= 300) {
@@ -66,11 +64,7 @@ function setUI(res) {
         var foot = document.createElement("h3");
         foot.setAttribute("id", "footer");
         frameUl.appendChild(foot);
-        if (flag = false) {
-            foot.innerHTML = "已经到底了！！";
-        } else {
-            foot.innerHTML = "受性能限制<br>最多显示300条结果<br>多刷新几次试试吧";
-        }
+        foot.innerHTML = "受性能限制<br>最多显示300条结果<br>多刷新几次试试吧";
     }
 
 }
