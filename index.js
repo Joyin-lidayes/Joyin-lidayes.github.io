@@ -17,7 +17,7 @@ function randomRange(min = 0, max = allGame.length - 1) {
     return ~~(Math.random() * (max - min + 1)) + min
 }
 
-function getAllGame() {
+function setUI(res) {
     if (document.getElementById("game")) {
         document.getElementById("game").remove();
     }
@@ -25,68 +25,47 @@ function getAllGame() {
         document.getElementById("foot").remove();
     }
     var bodyFa = document.getElementById("showGame"); //通过id号获取frameLi 的父类
-    var frameUl = document.createElement("ul");
-    frameUl.setAttribute("id", "game");
-    bodyFa.appendChild(frameUl);
-    for (var i = 0; i < allGame.length; i++) {
-        var temp = allGame[i].split(",");
-        var frameLi = document.createElement("li");
-        frameLi.setAttribute("class", "gList");
-        var gameUrl = document.createElement("a");
-        gameUrl.setAttribute("href", temp[2]);
-        gameUrl.setAttribute("class", "urla");
-        frameLi.appendChild(gameUrl);
-        frameUl.appendChild(frameLi);
-        gameUrl.innerHTML = temp[1];
+    if (res.length == 0) {
+        var foot = document.createElement("h3");
+        foot.setAttribute("id", "foot");
+        bodyFa.appendChild(foot);
+        foot.innerHTML = "搜索的游戏好特殊<br>反馈给我添加吧！";
+    } else {
+        var frameUl = document.createElement("ul");
+        frameUl.setAttribute("id", "game");
+        bodyFa.appendChild(frameUl);
+        for (var i = 0; i < res.length; i++) {
+            var temp = res[i].split(",");
+            var frameLi = document.createElement("li");
+            frameLi.setAttribute("class", "gList");
+            var gameUrl = document.createElement("a");
+            gameUrl.setAttribute("href", temp[2]);
+            gameUrl.setAttribute("class", "urla");
+            frameLi.appendChild(gameUrl);
+            frameUl.appendChild(frameLi);
+            gameUrl.innerHTML = temp[1];
+        }
+        var foot = document.createElement("h3");
+        foot.setAttribute("id", "footer");
+        frameUl.appendChild(foot);
+        foot.innerHTML = "已经到底了！！";
     }
-    var foot = document.createElement("h3");
-    foot.setAttribute("id", "footer");
-    frameUl.appendChild(foot);
-    foot.innerHTML = "已经到底了！！";
-}
 
+}
 
 /**
  * 随机生成在游戏目录区间的随机数
  * @param  randomList  最随机数列表，默认0
  * @return None        返回的结果
  */
-function setRandomGame(randomList) {
-    if (document.getElementById("game")) {
-        document.getElementById("game").remove();
-    }
-    if (document.getElementById("foot")) {
-        document.getElementById("foot").remove();
-    }
-    var bodyFa = document.getElementById("showGame"); //通过id号获取frameLi 的父类
-    var frameUl = document.createElement("ul");
-    frameUl.setAttribute("id", "game");
-    bodyFa.appendChild(frameUl);
-    for (var i = 0; i < randomList.length; i++) {
-        var temp = allGame[randomList[i]].split(",");
-        var frameLi = document.createElement("li");
-        frameLi.setAttribute("class", "gList");
-        var gameUrl = document.createElement("a");
-        gameUrl.setAttribute("href", temp[2]);
-        gameUrl.setAttribute("class", "urla");
-        frameLi.appendChild(gameUrl);
-        frameUl.appendChild(frameLi);
-        gameUrl.innerHTML = temp[1];
-    }
-    var foot = document.createElement("h3");
-    foot.setAttribute("id", "footer");
-    frameUl.appendChild(foot);
-    foot.innerHTML = "已经到底了！！";
-}
 
 function randomGame() {
     randomIt = [];
     for (var i = 0; i < 15; i++) {
-        temp = randomRange();
+        temp = allGame[randomRange()];
         randomIt.push(temp);
     }
-    setRandomGame(randomIt);
-
+    setUI(randomIt);
 }
 
 /**
@@ -110,38 +89,7 @@ function searchGameByName() {
     if (gameName == "") {
         alert("未输入内容！");
     } else {
-        if (document.getElementById("game")) {
-            document.getElementById("game").remove();
-        }
-        if (document.getElementById("foot")) {
-            document.getElementById("foot").remove();
-        }
-        var bodyFa = document.getElementById("showGame"); //通过id号获取frameLi 的父类
         var res = fuzzyQuery(allGame, gameName);
-        if (res.length == 0) {
-            var foot = document.createElement("h3");
-            foot.setAttribute("id", "foot");
-            bodyFa.appendChild(foot);
-            foot.innerHTML = "搜索的游戏好特殊<br>反馈给我添加吧！";
-        } else {
-            var frameUl = document.createElement("ul");
-            frameUl.setAttribute("id", "game");
-            bodyFa.appendChild(frameUl);
-            for (var i = 0; i < res.length; i++) {
-                var temp = res[i].split(",");
-                var frameLi = document.createElement("li");
-                frameLi.setAttribute("class", "gList");
-                var gameUrl = document.createElement("a");
-                gameUrl.setAttribute("href", temp[2]);
-                gameUrl.setAttribute("class", "urla");
-                frameLi.appendChild(gameUrl);
-                frameUl.appendChild(frameLi);
-                gameUrl.innerHTML = temp[1];
-            }
-            var foot = document.createElement("h3");
-            foot.setAttribute("id", "footer");
-            frameUl.appendChild(foot);
-            foot.innerHTML = "已经到底了！！";
-        }
+        setUI(res)
     }
 }
