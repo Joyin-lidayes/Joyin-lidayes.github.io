@@ -64,7 +64,7 @@ function setUI(res) {
         var foot = document.createElement("h3");
         foot.setAttribute("id", "footer");
         frameUl.appendChild(foot);
-        foot.innerHTML = "受性能限制<br>最多显示300条结果<br>多刷新几次试试吧";
+        foot.innerHTML = "已经到底啦！！";
     }
 
 }
