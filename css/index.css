@@ -1,0 +1,150 @@
+.header {
+    margin-left: 30px;
+    margin-top: 10px;
+}
+
+#headert {
+    margin-left: 50px;
+}
+
+.searchBox {
+    width: 300px;
+    height: 120px;
+    margin: 0 auto;
+    margin-bottom: 10px;
+    margin-top: 15px;
+    background-color: #cccccc;
+    border-radius: 10px;
+}
+
+.input {
+    padding-top: 5%;
+    padding-left: 20%;
+}
+
+.gameName {
+    width: 190px;
+    height: 30px;
+    padding-left: 28px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.search {
+    width: 60px;
+    height: 25px;
+    border-radius: 4px;
+    margin-left: 65px;
+}
+
+.allGame {
+    width: 80px;
+    height: 20px;
+    margin-top: 10px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.classGame {
+    width: 80px;
+    height: 20px;
+    margin-top: 10px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.upload {
+    width: 70px;
+    height: 30px;
+    margin: 0 auto;
+    font-size: medium;
+    text-align: center;
+}
+
+#donation {
+    position: relative;
+    width: 300px;
+    margin: 0 auto;
+}
+
+#x {
+    color: darkred;
+    top: 3%;
+    left: 95%;
+    text-align: center;
+    font-size: x-large;
+    position: absolute;
+}
+
+.dona {
+    width: 150px;
+    margin-bottom: 5px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.helpMe {
+    width: 240px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#showGame {
+    margin-top: 10px;
+    margin: 0 auto;
+    width: 300px;
+    height: 120px;
+}
+
+#footer {
+    margin-top: 20px;
+    margin-left: 75px;
+}
+
+#foot {
+    margin-top: 20px;
+    margin-left: 75px;
+    padding-left: 20px;
+}
+
+.gList {
+    color: black;
+    width: 220px;
+    margin-top: 5px;
+    padding-left: 50px;
+    list-style-type: decimal;
+    list-style-position: inside;
+}
+
+.urla {
+    border-bottom: 1px solid black;
+}
+
+#gNum {
+    margin-left: 20px;
+}
+
+body {
+    position: relative;
+}
+
+#gg {
+    border: 2px #cccccc solid;
+    position: absolute;
+    width: 70%;
+    border-radius: 15px;
+    top: 26%;
+    left: 15%;
+    background-color: white;
+    padding-left: 8%;
+    padding-right: 8%;
+    padding-top: 5%;
+}
+
+.closegg {
+    width: 60px;
+    height: 25px;
+    border-radius: 4px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+}
