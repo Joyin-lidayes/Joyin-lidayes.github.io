@@ -29,7 +29,7 @@ function closegg() {
  */
 
 function randomGame() {
-    item = 15;
+    item = 20;
     randomIt = [];
     for (var i = 0; i < item; i++) {
         temp = allGame[randomRange()];
