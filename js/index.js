@@ -1,12 +1,45 @@
 document.onkeydown = function(e) { // 回车提交表单
-        // 兼容FF和IE和Opera
-        var theEvent = window.event || e;
-        var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
-        if (code == 13) {
-            searchGameByName();
-        }
+    // 兼容FF和IE和Opera
+    var theEvent = window.event || e;
+    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+    if (code == 13) {
+        searchGameByName();
     }
-    //隐藏捐赠名单
+}
+
+function copyTxt(text) {
+    if (typeof document.execCommand !== "function") {
+        alert("复制失败，请长按复制");
+        return;
+    }
+    var dom = document.createElement("textarea");
+    dom.value = text;
+    dom.setAttribute('style', 'display: block;width: 1px;height: 1px;');
+    document.body.appendChild(dom);
+    dom.select();
+    var result = document.execCommand('copy');
+    document.body.removeChild(dom);
+    if (result) {
+        return;
+    }
+    if (typeof document.createRange !== "function") {
+        alert("复制失败，请长按复制");
+        return;
+    }
+    var range = document.createRange();
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    div.setAttribute('style', 'height: 1px;fontSize: 1px;overflow: hidden;');
+    document.body.appendChild(div);
+    range.selectNode(div);
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        selection.removeAllRanges();
+    }
+    selection.addRange(range);
+    document.execCommand('copy');
+}
+//隐藏捐赠名单
 function hideIt() {
     var donation = document.getElementById("donation");
     donation.style.display = "none";
