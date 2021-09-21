@@ -7,7 +7,7 @@ document.onkeydown = function(e) { // 回车提交表单
     }
 }
 
-function copyTxt(text) {
+function copyTxt(text, flag) {
     if (typeof document.execCommand !== "function") {
         alert("复制失败，请长按复制");
         return;
@@ -20,7 +20,16 @@ function copyTxt(text) {
     var result = document.execCommand('copy');
     document.body.removeChild(dom);
     if (result) {
+        if (flag == 0) {
+            alert("QQ群号已复制入剪切板！");
+        }
+        if (flag == 1) {
+            alert("密码已复制入剪切板！");
+        }
         return;
+
+
+
     }
     if (typeof document.createRange !== "function") {
         alert("复制失败，请长按复制");
