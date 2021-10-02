@@ -2,7 +2,7 @@ span {
     margin-left: 10px;
 }
 
-img {
+#img img {
     width: 40%;
     height: 40%;
     margin-left: 2%;
@@ -27,4 +27,29 @@ p {
 h3 {
     margin-top: 10px;
     text-align: center;
+}
+
+body {
+    position: relative;
+}
+
+#bigpic {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+#bigpic h3 {
+    color: red;
+}
+
+#bigpic img {
+    display: block;
+    width: 80%;
+    margin: 0 auto;
+    margin-top: 12%;
 }

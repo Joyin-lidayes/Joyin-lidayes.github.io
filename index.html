@@ -12,7 +12,7 @@
     <script src="js/index.js"></script>
 </head>
 
-<body>
+<body onload="getSession()">
     <header>
         <h1 class="header">jar游戏下载站</h1>
         <p id="headert"><a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=0CoBwe2JqR2lYJIqdFKZNG17smWMHj5N&jump_from=webapi">若出现问题或需要反馈，请点此联系我</a></p>
@@ -42,6 +42,7 @@
         <div id="x" onclick="hideIt()">x</div>
         <p class="dona" style="font-size: medium;">老婆 捐赠 5.20 元</p>
         <p class="dona" style="font-size: medium;">彼岸丶樱 捐赠 10.00 元</p>
+        <p class="dona" style="font-size: medium;">佚名 捐赠 8.88 元</p>
         <h3 class="dona">特别鸣谢</h3>
         <div class="helpMe"><a href="./html/donation.html">如果你喜欢这个项目，可以点此向我进行捐赠<br>你的支持是我最大的动力！</a></div>
     </div>
@@ -54,6 +55,7 @@
     <div id="gg">
         <h2>公告：</h2>
         <ul>
+            <li style="color: brown;">捐赠未备注的朋友如需备注请加群与我联系，万分感谢！</li>
             <li>本站游戏来源自网络，如有侵权，请联系我删除！</li>
             <li>受渲染机能限制，搜索结果若大于300条，将限制内容为300条，并随机展示结果，可尝试多次搜索</li>
             <li>尾部标有【昵称】为用户上传的游戏</li>
@@ -64,6 +66,7 @@
                 <a href="https://wwr.lanzoui.com/b02ielcib" onclick="copyTxt('9a0l',1)">点击这里获取最新版APP</a>
             </li>
             <li onclick="copyTxt('580458820',0)">点击加入QQ群聊</li>
+
         </ul>
         <hr>
         <button class="closegg" onclick="closegg()">关闭</button>

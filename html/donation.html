@@ -8,6 +8,7 @@
     <title>助力jar项目</title>
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/donation.css">
+    <script src="../js/downpic.js"></script>
 </head>
 
 <body>
@@ -18,9 +19,13 @@
         <p id="al">如果你喜欢这个项目，并希望看到它变得更好，可以给我捐赠支持！十分感谢！</p>
     </div>
     <div id="img">
-        <span><img src="../img/alipay.jpg" alt="支付宝支付"></span>
-        <span><img src="../img/wechat.png" alt="微信支付"></span>
-        <h3>请备注你的昵称，以便加入捐赠名单！万分感谢！</h3>
+        <span onclick="save('alipay')"><img id="alipay" src="../img/alipay.jpg" alt="支付宝支付"></span>
+        <span onclick="save('wechat')"><img id="wechat" src="../img/wechat.png" alt="微信支付"></span>
+        <h3>点击对应二维码可查看大图<br>请备注你的昵称，以便加入捐赠名单！万分感谢！</h3>
+    </div>
+    <div id="bigpic" onclick="closePage()">
+        <img id="paypic" src="../img/alipay.jpg">
+        <h3>再次点击关闭大图</h3>
     </div>
 </body>
 

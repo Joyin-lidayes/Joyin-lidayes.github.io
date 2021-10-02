@@ -129,13 +129,10 @@
     margin-left: 20px;
 }
 
-body {
-    position: relative;
-}
-
 #gg {
     border: 2px #cccccc solid;
     position: absolute;
+    display: none;
     width: 70%;
     border-radius: 15px;
     top: 26%;

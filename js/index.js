@@ -57,9 +57,18 @@ function hideIt() {
 
 }
 
+function getSession() {
+    if (sessionStorage.getItem("firstEnterPage") == null) {
+        var gg = document.getElementById("gg");
+        gg.style.display = "block";
+    }
+
+}
+
 function closegg() {
     var gg = document.getElementById("gg");
     gg.style.display = "none";
+    sessionStorage.setItem("firstEnterPage", "ok");
 
 }
 
@@ -117,11 +126,11 @@ function setUI(res) {
             var frameLi = document.createElement("li");
             frameLi.setAttribute("class", "gList");
             var gameUrl = document.createElement("a");
-            gameUrl.setAttribute("href", temp[2]);
+            gameUrl.setAttribute("href", temp[1]);
             gameUrl.setAttribute("class", "urla");
             frameLi.appendChild(gameUrl);
             frameUl.appendChild(frameLi);
-            gameUrl.innerHTML = temp[1];
+            gameUrl.innerHTML = temp[0];
         }
         var foot = document.createElement("h3");
         foot.setAttribute("id", "footer");
