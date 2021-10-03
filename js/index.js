@@ -62,6 +62,10 @@ function getSession() {
         var gg = document.getElementById("gg");
         gg.style.display = "block";
     }
+    if (sessionStorage.getItem("sessionGameListStr") != null) {
+        var sessionGameList = JSON.parse(sessionStorage.getItem("sessionGameListStr"));
+        setUI(sessionGameList);
+    }
 
 }
 
@@ -138,6 +142,7 @@ function setUI(res) {
         foot.innerHTML = "已经到底啦！！";
     }
 
+    sessionStorage.setItem("sessionGameListStr", JSON.stringify(res));
 }
 
 /**
