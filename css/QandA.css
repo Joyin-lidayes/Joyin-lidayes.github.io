@@ -1,0 +1,23 @@
+.QandA {
+    margin-top: 3%;
+    margin-left: 5%;
+    margin-bottom: 2%;
+}
+
+hr {
+    margin-bottom: 4%;
+}
+
+#main {
+    width: 75%;
+    margin: 0 auto;
+}
+
+.QA h3 {
+    color: darkred;
+}
+
+.QA span {
+    margin-left: 20px;
+    color: black;
+}
