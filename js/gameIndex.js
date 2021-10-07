@@ -71,16 +71,6 @@ var f = ['鼠来宝汉化版,https://wwr.lanzoui.com/iCqCluyj37i', '鲨鱼攻击
 
 
 
-
-
-var userupload = []
-
-
-
-
-
-
-
 var allGame = [...a, ...b, ...c, ...d, ...e, ...f, ...userupload];
 
 a = b = c = d = e = f = userupload = null;
