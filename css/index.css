@@ -129,9 +129,28 @@
     margin-left: 20px;
 }
 
+.up {
+    display: inline-block;
+    margin-left: 3px;
+}
+
+#upup {
+    top: 87%;
+    left: 82%;
+    display: none;
+    border: 2px #cccccc solid;
+    background-color: #cccccc;
+    position: fixed;
+    padding-bottom: 36px;
+    width: 35px;
+    height: 35px;
+    border-radius: 5px;
+}
+
 #gg {
     border: 2px #cccccc solid;
-    position: absolute;
+    display: none;
+    position: fixed;
     width: 70%;
     border-radius: 15px;
     top: 20%;

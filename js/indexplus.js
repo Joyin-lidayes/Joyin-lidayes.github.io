@@ -18,6 +18,21 @@ function shuffle(arr) {
     return arr;
 }
 
+function search() {
+    let arr = [];
+
+    let keyWord = $("#gameName").val();
+    if (keyWord == "") alert("未输入内容");
+    else {
+        for (var i = 0; i < allGame.length; i++) {
+            if (allGame[i].indexOf(keyWord) >= 0) {
+                arr.push(allGame[i]);
+            }
+        }
+        setUI(arr);
+    }
+}
+
 function copyTxt(text) {
     if (typeof document.execCommand !== "function") {
         alert("复制失败，请长按复制");
@@ -88,17 +103,36 @@ function setUI(arr) {
     }
 }
 
+$(document).keypress(
+    function(event) {
+        if (event.keyCode == 13) {
+            search();
+        }
+    }
+);
+
 
 $(document).ready(
     function() {
 
-        if ($.session.get("firstEnterPage") != null) {
-            $("#gg").hide();
+
+
+        if ($.session.get("firstEnterPage") == null) {
+            $("#gg").css("display", "block");
         }
         if ($.session.get("sessionGameListStr") != null) {
             var sessionGameList = JSON.parse($.session.get("sessionGameListStr"));
             setUI(sessionGameList);
         }
+
+        $(window).scroll(
+            function() {
+                // if ($(this).scrollTop() > 100) $("#upup").css("display", "block");
+                if ($(this).scrollTop() > 100) $("#upup").fadeIn(300);
+                else $("#upup").fadeOut(300);
+
+            }
+        );
 
         $(".allGame").click(
             function() {
@@ -122,15 +156,7 @@ $(document).ready(
 
         $(".search").click(
             function() {
-                let arr = [];
-
-                let keyWord = $("#gameName").val();
-                for (var i = 0; i < allGame.length; i++) {
-                    if (allGame[i].indexOf(keyWord) >= 0) {
-                        arr.push(allGame[i]);
-                    }
-                }
-                setUI(arr);
+                search();
             }
         );
 
