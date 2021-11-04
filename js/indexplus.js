@@ -125,9 +125,14 @@ $(document).ready(
             setUI(sessionGameList);
         }
 
+        $("#upup").click(
+            function() {
+                scrollTo(0, 0);
+            }
+        );
+
         $(window).scroll(
             function() {
-                // if ($(this).scrollTop() > 100) $("#upup").css("display", "block");
                 if ($(this).scrollTop() > 100) $("#upup").fadeIn(300);
                 else $("#upup").fadeOut(300);
 
