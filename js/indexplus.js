@@ -1,3 +1,8 @@
+var sleep = function(time) {
+    var startTime = new Date().getTime() + parseInt(time, 10);
+    while (new Date().getTime() < startTime) {}
+};
+
 /**
  * 随机生成在游戏目录区间的随机数
  * @param  min=0  最小值，默认0
@@ -94,7 +99,7 @@ function setUI(arr) {
         for (let i = 0; i < arr.length; i++) {
             let temp = arr[i].split(",");
             gname = temp[0];
-            gsrc = temp[1];
+            gsrc = $.base64.decode(temp[1]);
             appenditem = "<li class='gList'><a class='urla' href='" + gsrc + "'>" + gname + "</a></li>";
             $("#setGame").append(appenditem);
         }
