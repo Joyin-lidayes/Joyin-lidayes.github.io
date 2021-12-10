@@ -19,7 +19,7 @@
 
 .input {
     padding-top: 5%;
-    padding-left: 20%;
+    padding-left: 19%;
 }
 
 .gameName {
@@ -54,11 +54,14 @@
 }
 
 .upload {
-    width: 70px;
     height: 30px;
     margin: 0 auto;
     font-size: medium;
     text-align: center;
+}
+
+.upload a {
+    color: darkgrey;
 }
 
 #donation {
