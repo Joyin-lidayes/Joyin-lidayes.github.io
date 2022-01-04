@@ -1,0 +1,13 @@
+{
+    "name": "JAR下载站",
+    "short_name": "JAR游戏下载",
+    "start_url": "/index.html",
+    "icons": [{
+        "src": "/img/header/icon.png",
+        "sizes": "144*144",
+        "type": "image/png"
+    }],
+    "background_color": "white",
+    "theme_color": "white",
+    "display": "standalone"
+}
