@@ -116,6 +116,17 @@ $(document).keypress(
     }
 );
 
+$(document).ready(
+    function() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./js/sw.js').then(registration => {
+                console.log("ok!")
+            }).catch(err => {
+                console.log("err!")
+            })
+        }
+    }
+);
 
 $(document).ready(
     function() {
