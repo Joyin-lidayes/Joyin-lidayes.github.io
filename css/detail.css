@@ -49,6 +49,12 @@
     margin: 5px auto;
 }
 
+.size h3 a {
+    text-align: center;
+    margin: 5px auto;
+    color: red;
+}
+
 .size p {
     display: inline;
 }

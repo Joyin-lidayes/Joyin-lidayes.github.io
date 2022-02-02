@@ -6,10 +6,10 @@ $(document).ready(function() {
         $(".size h3 a").attr("href", $.session.get("gsrc"));
         $("#detail .img img").attr("alt", $.session.get("gname"));
         // $("#detail .img img").attr("src", "../img/none.png");
-        // $.session.remove("gname");
-        // $.session.remove("gsrc");
+        $.session.remove("gname");
+        $.session.remove("gsrc");
     } else {
-        console.log("gname");
+        alert("错误！请退出重试！！");
 
     }
 
