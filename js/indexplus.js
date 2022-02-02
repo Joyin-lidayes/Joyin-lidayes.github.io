@@ -100,7 +100,8 @@ function setUI(arr) {
             let temp = arr[i].split(",");
             gname = temp[0];
             gsrc = $.base64.decode(temp[1]);
-            appenditem = "<li class='gList'><a class='urla' href='" + gsrc + "'>" + gname + "</a></li>";
+
+            appenditem = "<li class='gList'><a class='urla' href='./html/detail.html' gname=" + gname + " gsrc=" + gsrc + ">" + gname + "</a></li>";
             $("#setGame").append(appenditem);
         }
         appenditem = "<h3 id='footer'>已经到底啦！！</h3>";
@@ -112,6 +113,7 @@ $(document).keypress(
     function(event) {
         if (event.keyCode == 13) {
             search();
+            location.reload();
         }
     }
 );
@@ -135,6 +137,8 @@ $(document).ready(
             }
         );
 
+
+
         $(window).scroll(
             function() {
                 if ($(this).scrollTop() > 100) $("#upup").fadeIn(300);
@@ -146,6 +150,7 @@ $(document).ready(
         $(".allGame").click(
             function() {
                 setUI(allGame);
+                location.reload();
             }
         );
 
@@ -166,6 +171,7 @@ $(document).ready(
         $(".search").click(
             function() {
                 search();
+                location.reload();
             }
         );
 
@@ -178,8 +184,17 @@ $(document).ready(
                     randomIt.push(temp);
                 }
                 setUI(randomIt);
+                location.reload();
             }
         );
+
+        $(".gList a").click(
+            function() {
+                var gname = $(this).attr("gname");
+                var gsrc = $(this).attr("gsrc");
+                $.session.set("gname", gname);
+                $.session.set("gsrc", gsrc);
+            });
 
         $("#QQqun").click(
             function() {

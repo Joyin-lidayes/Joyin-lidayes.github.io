@@ -1,0 +1,54 @@
+#header {
+    margin-top: 4%;
+    margin-bottom: 1%;
+}
+
+.gameDetail {
+    text-align: center;
+}
+
+#detail .img {
+    width: 80px;
+    height: 80px;
+    display: block;
+    margin: 10px auto;
+}
+
+#detail .img img {
+    width: 80px;
+    height: 80px;
+}
+
+#detail {
+    padding: 0 8%;
+}
+
+.texts {
+    margin-bottom: 4%;
+}
+
+.texts h3 {
+    text-align: center;
+}
+
+.texts h5 {
+    text-indent: 2em;
+}
+
+#footer {
+    margin: 10px auto;
+}
+
+#footer a {
+    display: block;
+    text-align: center;
+}
+
+.size h3 {
+    text-align: center;
+    margin: 5px auto;
+}
+
+.size p {
+    display: inline;
+}
