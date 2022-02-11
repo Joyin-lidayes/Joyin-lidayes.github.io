@@ -113,7 +113,7 @@ $(document).keypress(
     function(event) {
         if (event.keyCode == 13) {
             search();
-            location.reload();
+            $.getScript("./js/rebind.js", function() { console.log("load OK!") });
         }
     }
 );
@@ -150,7 +150,7 @@ $(document).ready(
         $(".allGame").click(
             function() {
                 setUI(allGame);
-                location.reload();
+                $.getScript("./js/rebind.js", function() { console.log("load OK!") });
             }
         );
 
@@ -171,7 +171,7 @@ $(document).ready(
         $(".search").click(
             function() {
                 search();
-                location.reload();
+                $.getScript("./js/rebind.js", function() { console.log("load OK!") });
             }
         );
 
@@ -184,17 +184,9 @@ $(document).ready(
                     randomIt.push(temp);
                 }
                 setUI(randomIt);
-                location.reload();
+                $.getScript("./js/rebind.js", function() { console.log("load OK!") });
             }
         );
-
-        $(".gList a").click(
-            function() {
-                var gname = $(this).attr("gname");
-                var gsrc = $(this).attr("gsrc");
-                $.session.set("gname", gname);
-                $.session.set("gsrc", gsrc);
-            });
 
         $("#QQqun").click(
             function() {
