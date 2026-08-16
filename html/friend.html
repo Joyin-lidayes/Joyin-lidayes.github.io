@@ -3,41 +3,47 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e6e8eb">
     <title>jar游戏小站的友情链接</title>
+    <link rel="icon" href="../favicon.ico">
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/QandAandfriend.css">
 </head>
 
 <body>
-    <div id="header">
-        <h1 class="QandA">jar友情链接（排名不分先后）</h1>
-        <hr>
-    </div>
-    <div id="main">
-        <div class="fUrl">
-            <img src="../img/header/iniche.png">
-            <a href="https://iniche.cn/">小众网</a>
-            <span>珍藏即将遗失的诺基亚功能机JAVA游戏软件。</span>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="../index.html">
+                <span class="logo">J</span>
+                <span>jar 游戏小站</span>
+            </a>
+            <button class="nav-toggle" aria-label="打开菜单" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links">
+                <a href="../index.html">首页</a>
+                <a href="friend.html" class="active">友链</a>
+                <a href="QandA.html">Q&amp;A</a>
+                <a href="donation.html">捐赠</a>
+            </nav>
         </div>
-        <div class="fUrl">
-            <img src="../img/header/jvzh.ico">
-            <a href="https://jvzh.cn">续梦网</a>
-            <span>珍藏即将遗失的功能机JAVA游戏软件。</span>
-        </div>
-        <div class="fUrl">
-            <img src="../img/header/ejava.jpg">
-            <a href="https://ejjava.vercel.app/">E简网</a>
-            <span>E简网：分享即将逝去的诺基亚java游戏及软件!!!</span>
-        </div>
-        <!-- <div class="fUrl">
-            <img src="../img/header/favicon.ico">
-            <a href="#">测试友链</a>
-            <span>这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链这是一个测试友链</span>
-        </div> -->
-    </div>
+    </header>
 
+    <main class="container">
+        <div class="page-head">
+            <h1>jar 友情链接</h1>
+            <p>排名不分先后，感谢每一位同好。</p>
+        </div>
+
+        <div class="friend-list" id="friendList"></div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Joyin · jar 游戏小站 · <a href="../index.html">返回首页</a></p>
+    </footer>
+
+    <script src="../js/common.js"></script>
 </body>
 
 </html>

@@ -1,174 +1,590 @@
-.header {
-    margin-left: 30px;
-    margin-top: 10px;
-}
+/* =========================================================
+   jar 游戏小站 · 首页样式
+   移动端（<560px）：紧凑列表；桌面端（≥560px）：网格卡片
+   ========================================================= */
 
-#headert {
-    margin-left: 50px;
-}
-
-.searchBox {
-    width: 300px;
-    height: 120px;
-    margin: 0 auto;
-    margin-bottom: 10px;
-    margin-top: 15px;
-    background-color: #cccccc;
-    border-radius: 10px;
-}
-
-.input {
-    padding-top: 5%;
-    padding-left: 19%;
-}
-
-.gameName {
-    width: 190px;
-    height: 30px;
-    padding-left: 28px;
-    border-radius: 4px;
-    margin-bottom: 12px;
-}
-
-.search {
-    width: 60px;
-    height: 25px;
-    border-radius: 4px;
-    margin-left: 65px;
-}
-
-.allGame {
-    width: 80px;
-    height: 20px;
-    margin-top: 10px;
-    border-radius: 4px;
-    margin-left: 8px;
-}
-
-.classGame {
-    width: 80px;
-    height: 20px;
-    margin-top: 10px;
-    border-radius: 4px;
-    margin-left: 8px;
-}
-
-.upload {
-    /* height: 50px; */
-    margin: 0 auto;
-    font-size: medium;
+/* ---------- 主视觉 ---------- */
+.hero {
+    padding: 32px 0 24px;
     text-align: center;
 }
 
-.upload a {
-    color: darkgrey;
+.hero-tag {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-size: 13px;
+    letter-spacing: 2px;
 }
 
-#donation {
-    position: relative;
-    width: 300px;
+.hero h1 {
+    margin: 12px 0 8px;
+    font-size: clamp(28px, 7vw, 40px);
+    letter-spacing: 1px;
+}
+
+.hero h1 .glow {
+    color: var(--accent);
+}
+
+.hero-sub {
+    color: var(--muted);
+    max-width: 620px;
     margin: 0 auto;
+    font-size: 14px;
+}
+
+.hero-sub strong {
+    color: var(--accent);
+    font-family: var(--mono);
+}
+
+/* ---------- 搜索（单行） ---------- */
+.search {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 8px;
+    max-width: 520px;
+    margin: 20px auto 0;
+}
+
+.search input,
+.search .btn {
+    box-sizing: border-box;
+    height: 44px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+}
+
+.search input {
+    flex: 1;
+    min-width: 0;
+    padding: 0 14px;
+    line-height: 44px;
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.search input::placeholder {
+    color: var(--faint);
+}
+
+.search input:focus {
+    border-color: var(--accent);
+}
+
+.search .btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    line-height: 1;
+    font-family: var(--mono);
+    font-weight: 700;
+}
+
+/* 快捷按钮 */
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    max-width: 520px;
+    margin: 10px auto 0;
+}
+
+.quick-actions .btn {
+    flex: 1;
+}
+
+/* meta 区（移动端为胶囊标签） */
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    justify-content: center;
+    margin-top: 18px;
+}
+
+.hero-meta a,
+.hero-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.hero-meta a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* ---------- 区块与列表 ---------- */
+.section {
+    padding: 24px 0 8px;
+}
+
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: var(--bw) solid var(--border-soft);
+}
+
+.section-head h2 {
+    font-size: 17px;
+}
+
+.section-head h2::before {
+    content: "▶ ";
+    color: var(--accent);
+}
+
+.section-head .muted {
+    font-size: 12px;
+}
+
+#games {
+    display: none;
+    scroll-margin-top: 60px;
+}
+
+/* 移动端：紧凑列表行 */
+.game-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+
+.game-card a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--text);
+}
+
+.game-card:last-child a {
+    border-bottom: 0;
+}
+
+.game-card a::after {
+    content: "›";
+    flex: 0 0 auto;
+    margin-left: 2px;
+    color: var(--faint);
+    font-size: 18px;
+    line-height: 1;
+}
+
+.game-icon {
+    color: var(--accent);
+    font-size: 12px;
+    flex: 0 0 auto;
+}
+
+.game-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--muted);
+    padding: 32px 0;
+}
+
+/* 分页（移动端：每页条数占整行） */
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 12px;
+    margin-top: 14px;
+}
+
+.pager .btn {
+    padding: 8px 14px;
+}
+
+.pager .btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+    color: var(--faint);
+}
+
+.pager .btn:disabled:hover {
+    border-color: var(--border);
+    color: var(--faint);
+}
+
+.page-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.page-info input {
+    width: 52px;
+    height: 34px;
+    padding: 0 4px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font-size: 14px;
+    font-family: var(--mono);
+    color: var(--text);
+}
+
+.page-info input:focus {
+    border-color: var(--accent);
+}
+
+.page-size {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-basis: 100%;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.page-size select {
+    height: 34px;
+    padding: 0 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text);
+}
+
+.end-note {
+    display: none;
+    text-align: center;
+    color: var(--faint);
+    margin: 20px 0 8px;
+    letter-spacing: 1px;
+}
+
+/* ---------- 捐赠名单 ---------- */
+.donation {
+    padding-top: 20px;
+}
+
+.donation-card {
+    position: relative;
+    padding: 20px 16px 16px;
+}
+
+.donation-card h2 {
+    font-size: 17px;
+    text-align: center;
+    margin-bottom: 12px;
+    color: var(--accent);
+}
+
+.donation-card .special {
+    text-align: center;
+    color: var(--accent);
+    margin-top: 12px;
+    font-size: 14px;
 }
 
 #x {
-    color: darkred;
-    top: 3%;
-    left: 95%;
-    text-align: center;
-    font-size: x-large;
     position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--faint);
+    font-size: 18px;
+    line-height: 1;
 }
 
-.dona {
-    width: 200px;
-    font-size: medium;
-    margin-bottom: 5px;
-    margin: 0 auto;
-    text-align: center;
+#x:hover {
+    color: var(--danger);
+    background: var(--surface-2);
 }
 
-.helpMe {
-    width: 240px;
-    margin: 0 auto;
-    text-align: center;
+.donor-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
 }
 
-#showGame {
-    margin-top: 10px;
-    margin: 0 auto;
-    width: 300px;
-    height: 120px;
+.donor-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 11px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: var(--bw) solid var(--border-soft);
+    font-size: 14px;
 }
 
-#footer {
-    margin-top: 20px;
-    margin-left: 75px;
+.donor-list .dname {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-#foot {
-    margin-top: 20px;
-    margin-left: 75px;
-    padding-left: 20px;
+.donor-list .amount {
+    color: var(--accent);
+    font-family: var(--mono);
+    white-space: nowrap;
 }
 
-.gList {
-    color: black;
-    width: 220px;
-    margin-top: 5px;
-    padding-left: 50px;
-    list-style-type: decimal;
-    list-style-position: inside;
+.donor-list .dtime {
+    color: var(--faint);
+    font-size: 12px;
+    white-space: nowrap;
 }
 
-#gg ul li {
-    list-style-type: decimal;
-    list-style-position: inside;
+.donor-list .empty {
+    justify-content: center;
+    color: var(--muted);
+    padding: 12px 0;
+    border: 0;
+    background: none;
 }
 
-.urla {
-    border-bottom: 1px solid black;
+/* ---------- 公告弹窗 ---------- */
+.modal-card > h2 {
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-size: 18px;
 }
 
-#gNum {
-    margin-left: 20px;
+.gg-close {
+    display: grid;
+    place-items: center;
 }
 
-.up {
-    display: inline-block;
-    margin-left: 3px;
+.gg-list {
+    counter-reset: gg;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-#upup {
-    top: 87%;
-    left: 82%;
-    display: none;
-    border: 2px #cccccc solid;
-    background-color: #cccccc;
-    position: fixed;
-    padding-bottom: 36px;
-    width: 35px;
-    height: 35px;
-    border-radius: 5px;
+.gg-list li {
+    counter-increment: gg;
+    position: relative;
+    padding-left: 28px;
+    color: var(--muted);
+    font-size: 14px;
 }
 
-#gg {
-    border: 2px #cccccc solid;
-    display: none;
-    position: fixed;
-    width: 70%;
-    border-radius: 15px;
-    top: 20%;
-    left: 15%;
-    background-color: white;
-    padding-left: 8%;
-    padding-right: 8%;
-    padding-top: 5%;
+.gg-list li::before {
+    content: counter(gg);
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--mono);
+    color: var(--accent);
 }
 
-.closegg {
-    width: 60px;
-    height: 25px;
-    border-radius: 4px;
-    margin-top: 8px;
-    margin-bottom: 15px;
+.gg-list li.warn {
+    color: var(--text);
+}
+
+.gg-list li a {
+    color: var(--accent-2);
+}
+
+.copy-hint {
+    color: var(--faint);
+    font-size: 12px;
+}
+
+.modal-card .closegg {
+    margin-top: 18px;
+    width: 100%;
+}
+
+/* =========================================================
+   桌面端（≥560px）：网格卡片，保持原样
+   ========================================================= */
+@media (min-width: 560px) {
+    .hero {
+        padding: 40px 0 28px;
+    }
+
+    .search {
+        margin: 24px auto 0;
+    }
+
+    .search input,
+    .search .btn {
+        height: 46px;
+    }
+
+    .search input {
+        line-height: 46px;
+    }
+
+    .search .btn {
+        padding: 0 24px;
+    }
+
+    .quick-actions {
+        justify-content: center;
+    }
+
+    .quick-actions .btn {
+        flex: 0 1 auto;
+        min-width: 120px;
+    }
+
+    /* 桌面端 meta 恢复为文字链接 */
+    .hero-meta {
+        gap: 4px 12px;
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .hero-meta a,
+    .hero-meta > span {
+        display: inline;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+    .hero-meta a {
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .hero-meta a:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .section {
+        padding: 28px 0 8px;
+    }
+
+    .section-head {
+        margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+        font-size: 18px;
+    }
+
+    .section-head .muted {
+        font-size: 13px;
+    }
+
+    .game-grid {
+        gap: 8px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* 桌面端卡片样式 */
+    .game-card a {
+        padding: 11px 13px;
+        border: var(--bw) solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--text);
+        transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+    }
+
+    .game-card:last-child a {
+        border-bottom: var(--bw) solid var(--border);
+    }
+
+    .game-card a:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .game-card a:active {
+        background: var(--surface-2);
+    }
+
+    .game-card a::after {
+        content: none;
+    }
+
+    .donation {
+        padding-top: 22px;
+    }
+
+    .donation-card {
+        padding: 22px 16px 18px;
+    }
+
+    .donation-card h2 {
+        font-size: 18px;
+        margin-bottom: 14px;
+    }
+
+    .donation-card .special {
+        margin-top: 14px;
+    }
+
+    .donor-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pager {
+        margin-top: 16px;
+    }
+
+    .page-size {
+        flex-basis: auto;
+    }
+
+    .gg-close {
+        display: none;
+    }
+}
+
+@media (min-width: 900px) {
+    .game-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .donor-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1120px) {
+    .game-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }

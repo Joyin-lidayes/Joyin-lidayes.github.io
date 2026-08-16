@@ -3,30 +3,69 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e6e8eb">
     <title>助力jar项目</title>
+    <link rel="icon" href="../favicon.ico">
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/donation.css">
-    <script src="../js/downpic.js"></script>
 </head>
 
 <body>
-    <div id="header">
-        <h1 class="thanks">感谢你点入这个界面！</h1>
-        <hr>
-        <p>项目的开发是一个耗时耗力的过程，<br>尽管现在的它只是一个简单的界面。<br>甚至连存游戏的服务器也不是自己的，<br>但我仍然相信它会有一个光明的未来。<br>因为有包括我在内的你们——一群喜欢着这些游戏的人们。<br>做这个页面的初衷是为了向我们这些寻找或怀念jar游戏的人们<br>去找寻自己想要的游戏。<br>我也将在日后增加更多的游戏，<br>感谢你的持续关注！</p>
-        <p id="al">如果你喜欢这个项目，并希望看到它变得更好，可以给我捐赠支持！十分感谢！</p>
-    </div>
-    <div id="img">
-        <span onclick="save('alipay')"><img id="alipay" src="../img/alipay.jpg" alt="支付宝支付"></span>
-        <span onclick="save('wechat')"><img id="wechat" src="../img/wechat.png" alt="微信支付"></span>
-        <h3>点击对应二维码可查看大图<br>请备注你的昵称，以便加入捐赠名单！万分感谢！</h3>
-    </div>
-    <div id="bigpic" onclick="closePage()">
-        <img id="paypic" src="../img/alipay.jpg">
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="../index.html">
+                <span class="logo">J</span>
+                <span>jar 游戏小站</span>
+            </a>
+            <button class="nav-toggle" aria-label="打开菜单" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links">
+                <a href="../index.html">首页</a>
+                <a href="friend.html">友链</a>
+                <a href="QandA.html">Q&amp;A</a>
+                <a href="donation.html" class="active">捐赠</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-head">
+            <h1>感谢你点入这个界面！</h1>
+        </div>
+
+        <div class="intro">
+            <p>项目的开发是一个耗时耗力的过程，<br>尽管现在的它只是一个简单的界面。<br>甚至连存游戏的服务器也不是自己的，<br>但我仍然相信它会有一个光明的未来。<br>因为有包括我在内的你们——一群喜欢着这些游戏的人们。<br>做这个页面的初衷是为了向我们这些寻找或怀念jar游戏的人们<br>去找寻自己想要的游戏。<br>我也将在日后增加更多的游戏，<br>感谢你的持续关注！</p>
+            <p class="ask">如果你喜欢这个项目，并希望看到它变得更好，可以给我捐赠支持！十分感谢！</p>
+        </div>
+
+        <div class="pay">
+            <div class="qr">
+                <figure>
+                    <img id="alipay" src="../img/alipay.jpg" alt="支付宝支付">
+                    <figcaption>支付宝</figcaption>
+                </figure>
+                <figure>
+                    <img id="wechat" src="../img/wechat.png" alt="微信支付">
+                    <figcaption>微信</figcaption>
+                </figure>
+            </div>
+            <p class="hint">点击对应二维码可查看大图<br>请备注你的昵称，以便加入捐赠名单！万分感谢！</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Joyin · jar 游戏小站 · <a href="../index.html">返回首页</a></p>
+    </footer>
+
+    <div id="bigpic">
+        <img id="paypic" src="../img/alipay.jpg" alt="支付二维码大图">
         <h3>再次点击关闭大图</h3>
     </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/donation.js"></script>
 </body>
 
 </html>

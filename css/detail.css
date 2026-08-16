@@ -1,60 +1,93 @@
-#header {
-    margin-top: 4%;
-    margin-bottom: 1%;
+/* =========================================================
+   jar 游戏小站 · 游戏详情页
+   ========================================================= */
+
+.detail-card {
+    margin-top: 30px;
+    padding: 28px;
 }
 
-.gameDetail {
-    text-align: center;
+.detail-head {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 22px;
 }
 
-#detail .img {
-    width: 80px;
-    height: 80px;
-    display: block;
-    margin: 10px auto;
+.detail-head img {
+    width: 84px;
+    height: 84px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 6px;
+    object-fit: contain;
 }
 
-#detail .img img {
-    width: 80px;
-    height: 80px;
+.detail-tag {
+    color: var(--accent);
+    font-size: 12px;
+    letter-spacing: 2px;
 }
 
-#detail {
-    padding: 0 8%;
+.detail-head h1 {
+    font-size: clamp(22px, 5vw, 30px);
 }
 
 .texts {
-    margin-bottom: 4%;
+    margin-bottom: 22px;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    border: 1px solid var(--border-soft);
 }
 
 .texts h3 {
-    text-align: center;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-size: 16px;
 }
 
 .texts h5 {
+    color: var(--muted);
+    font-weight: 400;
     text-indent: 2em;
+    font-size: 14px;
 }
 
-#footer {
-    margin: 10px auto;
+.dl {
+    margin-bottom: 20px;
 }
 
-#footer a {
-    display: block;
+.dl a {
+    font-size: 16px;
+}
+
+.meta-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    border: 1px solid var(--border-soft);
+    font-size: 14px;
+}
+
+.foot-note {
     text-align: center;
+    margin: 22px 0 8px;
 }
 
-.size h3 {
-    text-align: center;
-    margin: 5px auto;
-}
-
-.size h3 a {
-    text-align: center;
-    margin: 5px auto;
-    color: red;
-}
-
-.size p {
-    display: inline;
+@media (max-width: 480px) {
+    .detail-head {
+        flex-direction: column;
+        text-align: center;
+    }
 }

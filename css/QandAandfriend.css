@@ -1,44 +1,113 @@
-.QandA {
-    margin-top: 3%;
-    margin-left: 5%;
-    margin-bottom: 2%;
+/* =========================================================
+   jar 游戏小站 · Q&A 与友链页
+   ========================================================= */
+
+.page-head {
+    margin: 34px 0 22px;
 }
 
-hr {
-    margin-bottom: 4%;
+.page-head h1 {
+    font-size: clamp(24px, 5vw, 32px);
 }
 
-#main {
-    width: 75%;
-    margin: 0 auto;
+.page-head p {
+    color: var(--muted);
+    margin-top: 6px;
 }
 
-.QA h3 {
-    color: darkred;
+/* ---------- Q&A ---------- */
+.qa-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
-.QA span {
-    margin-left: 20px;
-    color: black;
+.qa-item {
+    padding: 18px 20px;
 }
 
-.fUrl {
-    margin-bottom: 20px;
+.qa-item h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--text);
 }
 
-.fUrl img {
-    width: 30px;
-    height: 30px;
-    margin-bottom: 10px;
+.qa-item p {
+    color: var(--muted);
+    font-size: 14px;
 }
 
-.fUrl a {
-    font-size: 18px;
-    margin-left: 5px;
-    color: darkred;
+.qa-item a {
+    color: var(--accent-2);
 }
 
-.fUrl span {
+.q-tag,
+.a-tag {
+    font-family: var(--mono);
+    font-weight: 700;
+    flex: 0 0 auto;
+}
+
+.q-tag {
+    color: var(--accent-3);
+}
+
+.a-tag {
+    color: var(--accent-2);
+}
+
+/* ---------- 友链 ---------- */
+.friend-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.friend-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    color: var(--text);
+    transition: transform 0.12s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.friend-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    color: var(--text);
+}
+
+.friend-card img {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    object-fit: contain;
+    background: var(--surface-2);
+    padding: 8px;
+    border: 1px solid var(--border);
+}
+
+.f-name {
     display: block;
-    margin-left: 30px;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.f-desc {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+@media (min-width: 720px) {
+    .friend-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

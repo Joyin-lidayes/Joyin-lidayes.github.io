@@ -3,115 +3,128 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e6e8eb">
     <title>Joyin的jar游戏小站</title>
-    <meta name=keywords content=jar,java,怀旧游戏,下载,免费,塞班,java游戏,jar游戏>
-    <meta name=description content="立志做资源最全的java/jar游戏下载站点！">
-    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="keywords" content="jar,java,怀旧游戏,下载,免费,塞班,java游戏,jar游戏">
+    <meta name="description" content="立志做资源最全的java/jar游戏下载站点！">
+    <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/index.css">
-    <script src="js/jquery-3.6.0-min.js"></script>
-    <script src="js/jquery.base64.js"></script>
-    <script src="js/jqSession.js"></script>
-    <script src="js/gameIndex.js"></script>
-    <script src="js/indexplus.js"></script>
-    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 
 <body>
-    <header>
-        <h1 class="header"><a href="./html/history.html">jar游戏小站</a></h1>
-        <p id="headert"><a href="./html/QandA.html">如果在使用中遇到问题，请点击这里（Q&A）</a></p>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="./index.html">
+                <span class="logo">J</span>
+                <span>jar 游戏小站</span>
+            </a>
+            <button class="nav-toggle" aria-label="打开菜单" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links">
+                <a href="./index.html" class="active">首页</a>
+                <a href="./html/friend.html">友链</a>
+                <a href="./html/QandA.html">Q&amp;A</a>
+                <a href="./html/donation.html">捐赠</a>
+            </nav>
+        </div>
     </header>
-    <div class="searchBox">
-        <ul class="input">
-            <li>
-                <input class="gameName" id="gameName" type="text" placeholder="请输入游戏名" autofocus>
-            </li>
-            <li>
-                <button class="search">搜索</button>
-            </li>
-            <li>
-                <button class="allGame">全部游戏</button>
-                <button class="classGame">随机游戏</button>
-            </li>
-        </ul>
-    </div>
-    <br>
-    <hr>
-    <div class="upload">
-        <span id="busuanzi_container_site_pv" style='display:none'>小站总访问量<span id="busuanzi_value_site_pv"></span>次<br></span>
 
-        <!-- <a href="https://office.chaoxing.com/front/forms/gather/fore/gather?id=36207&enc=5a40f56b12892c9f510ffc4952398da8">我要上传</a> -->
-        <a onclick="alert('上传功能还在测试中...')">我要上传</a>
-        <||>
-            <a href="./html/friend.html">友链列表</a>
-    </div>
+    <main>
+        <!-- 主视觉与搜索 -->
+        <section class="hero container">
+            <p class="hero-tag mono">JAVA · JAR · 怀旧游戏仓库</p>
+            <h1>jar <span class="glow">游戏</span>小站</h1>
+            <p class="hero-sub">立志做资源最全的 java/jar 游戏下载站点，已收录
+                <strong id="heroCount">…</strong> 个游戏，持续更新中。
+            </p>
 
-    <hr>
-    <div id="donation">
-        <h2 class="dona">捐赠名单</h2>
-        <div id="x">x</div>
-        <p class="dona">老婆 捐赠 5.20 元</p>
-        <p class="dona">彼岸丶樱 捐赠 10.00 元</p>
-        <p class="dona">佚名（*。） 捐赠 8.88 元</p>
-        <p class="dona">佚名（o*n） 捐赠 0.50 元</p>
-        <p class="dona">佚名（*风） 捐赠 1.00 元</p>
-        <p class="dona">风筱 捐赠 3.00 元</p>
-        <p class="dona">佚名（**坚） 捐赠 5.00 元</p>
-        <p class="dona">佚名（**杰） 捐赠 10.00 元</p>
-        <p class="dona">Shawnnn 捐赠 9.99 元</p>
-        <p class="dona">佚名（*A） 捐赠 8.88 元</p>
-        <p class="dona">佚名（*毛） 捐赠 55.00 元</p>
-        <p class="dona">佚名（*晨） 捐赠 20.00 元</p>
-        <p class="dona">佚名（*凯） 捐赠 10.00 元</p>
-        <p class="dona">佚名（*洋） 捐赠 6.66 元</p>
-        <p class="dona">佚名（*成） 捐赠 3.00 元</p>
-        <h3 class="dona">特别鸣谢</h3>
-        <!-- <div class="helpMe"><a href="./html/donation.html">如果你喜欢这个项目，可以点此向我进行捐赠<br>你的支持是我最大的动力！</a></div> -->
-    </div>
-    <hr id="hr">
+            <div class="search">
+                <input id="gameName" type="text" placeholder="请输入游戏名" autocomplete="off">
+                <button id="searchBtn" class="btn btn-primary">搜索</button>
+            </div>
 
-    <footer id="showGame">
-        <ul id="setGame">
+            <div class="quick-actions">
+                <button class="btn allGame">全部游戏</button>
+                <button class="btn classGame">随机游戏</button>
+            </div>
 
-        </ul>
+            <div class="hero-meta">
+                <span id="busuanzi_container_site_pv" style="display:none">小站总访问量
+                    <span id="busuanzi_value_site_pv"></span> 次</span>
+                <a id="upload" href="javascript:void(0)">我要上传</a>
+                <a href="https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi" target="_blank" rel="noopener">加入群聊</a>
+            </div>
+        </section>
+
+        <!-- 游戏列表 -->
+        <section class="section container" id="games">
+            <div class="section-head">
+                <h2 id="gameTitle">游戏列表</h2>
+                <span id="gNum" class="muted"></span>
+            </div>
+            <ul id="setGame" class="game-grid"></ul>
+            <div class="pager" id="pager" style="display:none">
+                <button id="prevPage" class="btn" type="button">上一页</button>
+                <span class="page-info">第
+                    <input id="pageInput" type="number" min="1" value="1" inputmode="numeric">
+                    / <span id="totalPages">1</span> 页
+                </span>
+                <button id="nextPage" class="btn" type="button">下一页</button>
+                <label class="page-size">每页
+                    <select id="pageSizeSel">
+                        <option value="12">12</option>
+                        <option value="20">20</option>
+                        <option value="60" selected>60</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select> 条
+                </label>
+            </div>
+            <p id="foot" class="end-note mono">已经到底啦！！</p>
+        </section>
+
+        <!-- 捐赠名单 -->
+        <section class="section container donation" id="donation">
+            <div class="card donation-card">
+                <button id="x" aria-label="关闭">×</button>
+                <h2>捐赠名单</h2>
+                <ul class="donor-list" id="donorList"></ul>
+                <h3 class="special">特别鸣谢</h3>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2020 - 2026 Joyin · jar 游戏小站 · 本站游戏来源自网络，如有侵权，请联系删除</p>
     </footer>
 
-    <div id="gg">
-        <h2>公告：</h2>
-        <ul>
-
-            <!-- <li style="color: brown;">捐赠未备注的朋友如需备注请加群与我联系，万分感谢！</li> -->
-            <li style="color: brown;">最近事情比较多，可能会发生遗漏更新捐赠情况，十分抱歉！如果捐赠的朋友不在列表内，希望可以与我联系一下，万分感谢！</li>
-            <li style="color: brown;">由于未知原因，<a href="http://joyin-li.vercel.app">旧网址</a>已经无法使用，欢迎朋友们保存这个新网址！</li>
-            <li>本站游戏来源自网络，如有侵权，请联系我删除！</li>
-            <li>由于游戏数量过多，点击全部游戏按钮会有几秒卡顿，属于正常现象</li>
-            <!-- <li>尾部标有【昵称】为用户上传的游戏</li>
-            <li>点击随机游戏按钮会随机推荐20个游戏</li> -->
-            <li>使用via浏览器会出现不可预知错误，请更换其它浏览器</li>
-            <!-- <li>如果下载文件需要输入密码，默认密码为：1234</li> -->
-            <li id="QQqun" style="color: brown;"><a style="color: brown;" target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi">点击加入QQ群聊</a></li>
-
-        </ul>
-        <hr>
-        <button class="closegg">关闭</button>
+    <!-- 公告弹窗 -->
+    <div class="modal" id="gg" role="dialog" aria-modal="true" aria-label="公告">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h2>公告</h2>
+                <button class="modal-close gg-close" type="button" aria-label="关闭">×</button>
+            </div>
+            <ul class="gg-list">
+                <li class="warn">最近事情比较多，可能会发生遗漏更新捐赠情况，十分抱歉！如果捐赠的朋友不在列表内，希望可以与我联系一下，万分感谢！</li>
+                <li class="warn">由于未知原因，<a href="http://joyin-li.vercel.app" target="_blank" rel="noopener">旧网址</a>已经无法使用，欢迎朋友们保存这个新网址！</li>
+                <li>本站游戏来源自网络，如有侵权，请联系我删除！</li>
+                <li>使用 via 浏览器会出现不可预知错误，请更换其它浏览器。</li>
+                <li id="QQqun" class="warn"><a href="https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi" target="_blank" rel="noopener">点击加入QQ群聊</a><span class="copy-hint">（群号 580458820，点击复制）</span></li>
+            </ul>
+            <button class="btn btn-primary closegg">关闭</button>
+        </div>
     </div>
 
+    <button class="to-top" id="upup" aria-label="回到顶部">↑</button>
 
-
-    <div id="upup">
-        <div class="up">回到顶部</div>
-    </div>
-    <script id="rebind" src="js/rebind.js"></script>
-
+    <script src="js/gameIndex.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/main.js"></script>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
 
 </html>
-
-<script>
-    var gnum = allGame.length;
-    var phd = document.getElementById("gameName");
-    phd.setAttribute("placeholder", "在" + gnum + "个游戏中搜索...");
-</script>

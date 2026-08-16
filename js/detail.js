@@ -1,16 +1,33 @@
-$(document).ready(function() {
-    if ($.session.get("gname") && $.session.get("gsrc")) {
-        var gname = $(".texts h3").text();
-        gname = gname + ":" + $.session.get("gname");
-        $(".texts h3").text(gname);
-        $(".size h3 a").attr("href", $.session.get("gsrc"));
-        $("#detail .img img").attr("alt", $.session.get("gname"));
-        // $("#detail .img img").attr("src", "../img/none.png");
-        // $.session.remove("gname");
-        // $.session.remove("gsrc");
+/* =========================================================
+   jar 游戏小站 · 游戏详情页（原生 JS）
+   从 session 读取 gname / gsrc，填充标题与下载链接
+   ========================================================= */
+(function () {
+    'use strict';
+
+    var name = window.store.get('gname');
+    var src = window.store.get('gsrc');
+
+    var titleEl = document.getElementById('gameTitle');
+    var download = document.getElementById('download');
+    var img = document.getElementById('gameImg');
+    var intro = document.getElementById('intro');
+
+    if (name && src) {
+        document.title = name + ' - 游戏详情';
+        if (titleEl) titleEl.textContent = name;
+        if (download) {
+            download.href = src;
+            download.textContent = '点击下载';
+        }
+        if (img) img.alt = name;
     } else {
-        alert("错误！请退出重试！！");
-
+        document.title = '游戏详情';
+        if (titleEl) titleEl.textContent = '出错了';
+        if (intro) intro.textContent = '未找到游戏信息，请返回首页重新选择游戏。';
+        if (download) {
+            download.removeAttribute('href');
+            download.textContent = '暂无下载链接';
+        }
     }
-
-});
+})();
