@@ -2,7 +2,7 @@
    jar 游戏小站 · 首页逻辑（原生 JS，无 jQuery）
    - 搜索 / 全部游戏 / 随机游戏
    - 分页渲染（上一页/下一页 + 可输入页码跳转 + 每页条数选择）
-   - Base64 解码、session 存取、QQ 群复制、公告弹窗、回到顶部
+    - session 存取、QQ 群复制、公告弹窗、回到顶部
    - 捐赠名单：来自 donation.json
    ========================================================= */
 (function () {
@@ -39,21 +39,10 @@
     var currentList = [];
 
     /* ---------- 工具 ---------- */
-    function decodeBase64(s) {
-        try {
-            var bin = atob(s);
-            var bytes = new Uint8Array(bin.length);
-            for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            return new TextDecoder('utf-8').decode(bytes);
-        } catch (e) {
-            return s;
-        }
-    }
-
     function splitEntry(entry) {
         var i = entry.indexOf(',');
         if (i < 0) return { name: entry, src: '' };
-        return { name: entry.slice(0, i), src: decodeBase64(entry.slice(i + 1)) };
+        return { name: entry.slice(0, i), src: entry.slice(i + 1) };
     }
 
     function escapeHtml(s) {
