@@ -27,15 +27,27 @@
 }
 
 .hero-sub {
-    color: var(--muted);
     max-width: 620px;
     margin: 0 auto;
-    font-size: 14px;
+    line-height: 1.75;
+}
+
+.hero-sub-lead {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.hero-sub-detail {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
 }
 
 .hero-sub strong {
     color: var(--accent);
     font-family: var(--mono);
+    font-weight: 700;
 }
 
 /* ---------- 搜索（单行） ---------- */
