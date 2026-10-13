@@ -1,14 +1,16 @@
 /* =========================================================
    jar 游戏小站 · 首页逻辑（原生 JS，无 jQuery）
+   - 数据来自 games.json（一行一个游戏：[名字, 链接]）
    - 搜索 / 全部游戏 / 随机游戏
    - 分页渲染（上一页/下一页 + 可输入页码跳转 + 每页条数选择）
-    - session 存取、QQ 群复制、公告弹窗、回到顶部
+   - 公告弹窗、QQ 群复制、回到顶部
    - 捐赠名单：来自 donation.json
    ========================================================= */
 (function () {
     'use strict';
 
-    var GAMES = window.allGame || [];
+    var GAMES = [];          // [{ id, name, src }]
+    var pendingQuery = null; // 等待数据加载完成后执行的首个搜索
     var pageSize = 100;
     var currentPage = 1;
 
@@ -39,12 +41,6 @@
     var currentList = [];
 
     /* ---------- 工具 ---------- */
-    function splitEntry(entry) {
-        var i = entry.indexOf(',');
-        if (i < 0) return { name: entry, src: '' };
-        return { name: entry.slice(0, i), src: entry.slice(i + 1) };
-    }
-
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -64,13 +60,9 @@
 
     function getSortedGames() {
         if (sortedGames) return sortedGames;
-        var items = GAMES.map(function (entry) {
-            return { entry: entry, name: splitEntry(entry).name };
-        });
-        items.sort(function (a, b) {
+        sortedGames = GAMES.slice().sort(function (a, b) {
             return collator.compare(a.name, b.name);
         });
-        sortedGames = items.map(function (item) { return item.entry; });
         return sortedGames;
     }
 
@@ -82,11 +74,9 @@
         return name.slice(0, NAME_LIMIT) + '…';
     }
 
-    function cardHtml(entry) {
-        var g = splitEntry(entry);
+    function cardHtml(g) {
         var displayName = truncateName(g.name);
-        return '<li class="game-card"><a href="html/detail.html" data-name="' +
-            escapeHtml(g.name) + '" data-src="' + escapeHtml(g.src) + '" title="' + escapeHtml(g.name) + '">' +
+        return '<li class="game-card"><a href="html/detail.html?g=' + g.id + '" target="_blank" rel="noopener" title="' + escapeHtml(g.name) + '">' +
             '<span class="game-icon mono">▶</span>' +
             '<span class="game-name">' + escapeHtml(displayName) + '</span>' +
             '</a></li>';
@@ -159,6 +149,15 @@
     }
 
     /* ---------- 交互动作 ---------- */
+    function runSearch(kw) {
+        var sorted = getSortedGames();
+        var arr = [];
+        for (var i = 0; i < sorted.length; i++) {
+            if (sorted[i].name.indexOf(kw) >= 0) arr.push(sorted[i]);
+        }
+        setList(arr, '搜索「' + kw + '」的结果');
+    }
+
     function search() {
         var kw = input.value.trim();
         if (!kw) {
@@ -166,12 +165,7 @@
             input.focus();
             return;
         }
-        var sorted = getSortedGames();
-        var arr = [];
-        for (var i = 0; i < sorted.length; i++) {
-            if (sorted[i].indexOf(kw) >= 0) arr.push(sorted[i]);
-        }
-        setList(arr, '搜索「' + kw + '」的结果');
+        runSearch(kw);
     }
 
     function showAll() {
@@ -187,6 +181,16 @@
         setList(arr, '随机推荐');
     }
 
+    /* ---------- URL ?q= 搜索（等待数据加载后执行） ---------- */
+    window.doSearch = function (q) {
+        q = (q || '').trim();
+        if (!q) return;
+        if (input) input.value = q;
+        if (!GAMES.length) { pendingQuery = q; return; }
+        runSearch(q);
+    };
+
+    /* ---------- 复制 ---------- */
     function copy(text) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(
@@ -241,16 +245,40 @@
             });
     }
 
+    /* ---------- 游戏数据加载（games.json） ---------- */
+    function loadGames() {
+        if (grid) grid.innerHTML = '<li class="empty">正在加载游戏列表…</li>';
+
+        fetch(BASE + 'games.json')
+            .then(function (r) {
+                if (!r.ok) throw new Error('http ' + r.status);
+                return r.json();
+            })
+            .then(function (data) {
+                GAMES = (data || []).map(function (row, idx) {
+                    return {
+                        id: idx.toString(36),
+                        name: (row && row[0]) || '',
+                        src: (row && row[1]) || ''
+                    };
+                });
+
+                if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
+                if (heroCount) heroCount.textContent = GAMES.length;
+
+                if (pendingQuery) {
+                    var q = pendingQuery;
+                    pendingQuery = null;
+                    runSearch(q);
+                }
+            })
+            .catch(function () {
+                if (grid) grid.innerHTML = '<li class="empty">游戏数据加载失败，请刷新重试</li>';
+            });
+    }
+
     /* ---------- 事件绑定 ---------- */
     function bind() {
-        // 游戏卡片点击（事件委托）：写入 session 供详情页读取
-        grid.addEventListener('click', function (e) {
-            var a = e.target.closest('a[data-name]');
-            if (!a) return;
-            window.store.set('gname', a.getAttribute('data-name'));
-            window.store.set('gsrc', a.getAttribute('data-src'));
-        });
-
         var searchBtn = document.getElementById('searchBtn');
         if (searchBtn) searchBtn.addEventListener('click', search);
         document.querySelector('.allGame').addEventListener('click', showAll);
@@ -333,10 +361,9 @@
 
     /* ---------- 初始化 ---------- */
     function init() {
-        if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
-        if (heroCount) heroCount.textContent = GAMES.length;
         bind();
         loadDonation();
+        loadGames();
     }
 
     if (document.readyState === 'loading') {

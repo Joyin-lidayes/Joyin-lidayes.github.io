@@ -174,7 +174,6 @@
 
     <button class="to-top" id="upup" aria-label="回到顶部">↑</button>
 
-    <script src="js/gameIndex.js"></script>
     <script src="js/common.js"></script>
     <script src="js/main.js"></script>
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
@@ -187,9 +186,7 @@
                 try { q = decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch (e) { q = m[1]; }
                 q = (q || '').trim();
                 if (!q) return;
-                var inp = document.getElementById('gameName');
-                var btn = document.getElementById('searchBtn');
-                if (inp && btn) { inp.value = q; btn.click(); }
+                if (window.doSearch) window.doSearch(q);
             }
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', run);
