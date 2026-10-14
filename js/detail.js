@@ -7,7 +7,7 @@
 (function () {
     'use strict';
 
-    var BASE = window.SITE_BASE || '';
+    var BASE = window.SITE_BASE || (location.origin + '/');
 
     var titleEl = document.getElementById('gameTitle');
     var download = document.getElementById('download');
@@ -46,6 +46,7 @@
 
         current = { id: id, name: name, src: src };
 
+        setShareMeta(name);
         document.title = name ? name + ' - 游戏详情' : '游戏详情';
         if (titleEl) titleEl.textContent = name || '未知游戏';
 
@@ -68,14 +69,28 @@
     }
 
     function buildShareUrl() {
-        var base = location.href.split('#')[0].split('?')[0];
-        return base + '?g=' + (current ? current.id : '');
+        // 指向预生成的静态分享页 /g/<id>.html；
+        // QQ/微信爬虫不执行 JS，只能靠该页面写死的 og 标签识别游戏名
+        return BASE + 'g/s' + (current ? current.id : '') + '.html';
+    }
+
+    // 动态写入 og 元信息，便于部分分享场景/支持执行 JS 的抓取器显示游戏名
+    function setShareMeta(name) {
+        function set(prop, content) {
+            var el = document.querySelector('meta[property="' + prop + '"]');
+            if (el) el.setAttribute('content', content);
+        }
+        set('og:title', name ? name + ' - jar游戏小站' : 'jar游戏小站');
+        set('og:description', name
+            ? '「' + name + '」塞班Java(jar)怀旧手机游戏，点击下载。'
+            : '专注塞班Java(jar)怀旧手机游戏下载，收录15000+款诺基亚时代游戏。');
+        set('og:url', buildShareUrl());
     }
 
     function copyText(text) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(
-                function () { window.toast('已复制，去QQ/微信粘贴给好友'); },
+                function () { window.toast('已复制游戏分享文案，去QQ/微信粘贴给好友'); },
                 function () { fallbackCopy(text); }
             );
         } else {
@@ -93,7 +108,7 @@
         ta.select();
         try {
             document.execCommand('copy');
-            window.toast('已复制，去QQ/微信粘贴给好友');
+            window.toast('已复制游戏分享文案，去QQ/微信粘贴给好友');
         } catch (e) {
             window.toast('复制失败，请长按复制页面链接');
         }
@@ -107,7 +122,8 @@
             var url = buildShareUrl();
             var text = '【' + current.name + '】jar游戏下载';
             if (navigator.share) {
-                navigator.share({ title: current.name, text: text, url: url }).catch(function () {
+                navigator.share({ title: current.name, text: text, url: url }).catch(function (err) {
+                    if (err && err.name === 'AbortError') return; // 用户主动取消分享，不再复制
                     copyText(text + '\n' + url);
                 });
             } else {

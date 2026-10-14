@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /g/
 Allow: /
 
 Sitemap: https://joyin-lidayes.github.io/sitemap.xml
