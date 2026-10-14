@@ -10,7 +10,8 @@
     'use strict';
 
     var GAMES = [];          // [{ id, name, src }]
-    var pendingQuery = null; // 等待数据加载完成后执行的首个搜索
+    var pendingAction = null; // 数据加载完成后执行最后一次操作
+    var gamesState = 'idle'; // idle / loading / ready / error
     var pageSize = 100;
     var currentPage = 1;
 
@@ -149,7 +150,16 @@
     }
 
     /* ---------- 交互动作 ---------- */
+    function waitForGames(action) {
+        if (gamesState === 'ready') return false;
+        pendingAction = action;
+        showSection();
+        if (gamesState !== 'loading') loadGames();
+        return true;
+    }
+
     function runSearch(kw) {
+        if (waitForGames(function () { runSearch(kw); })) return;
         var sorted = getSortedGames();
         var arr = [];
         for (var i = 0; i < sorted.length; i++) {
@@ -169,10 +179,12 @@
     }
 
     function showAll() {
+        if (waitForGames(showAll)) return;
         setList(getSortedGames(), '全部游戏');
     }
 
     function showRandom() {
+        if (waitForGames(showRandom)) return;
         var n = 20;
         var arr = [];
         for (var j = 0; j < n; j++) {
@@ -186,7 +198,6 @@
         q = (q || '').trim();
         if (!q) return;
         if (input) input.value = q;
-        if (!GAMES.length) { pendingQuery = q; return; }
         runSearch(q);
     };
 
@@ -247,6 +258,8 @@
 
     /* ---------- 游戏数据加载（games.json） ---------- */
     function loadGames() {
+        if (gamesState === 'loading' || gamesState === 'ready') return;
+        gamesState = 'loading';
         if (grid) grid.innerHTML = '<li class="empty">正在加载游戏列表…</li>';
 
         fetch(BASE + 'games.json')
@@ -255,7 +268,8 @@
                 return r.json();
             })
             .then(function (data) {
-                GAMES = (data || []).map(function (row, idx) {
+                if (!Array.isArray(data) || data.length === 0) throw new Error('empty catalogue');
+                GAMES = data.map(function (row, idx) {
                     return {
                         id: idx.toString(36),
                         name: (row && row[0]) || '',
@@ -266,14 +280,19 @@
                 if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
                 if (heroCount) heroCount.textContent = GAMES.length;
 
-                if (pendingQuery) {
-                    var q = pendingQuery;
-                    pendingQuery = null;
-                    runSearch(q);
+                sortedGames = null;
+                gamesState = 'ready';
+                if (pendingAction) {
+                    var action = pendingAction;
+                    pendingAction = null;
+                    action();
+                } else if (grid) {
+                    grid.innerHTML = '';
                 }
             })
             .catch(function () {
-                if (grid) grid.innerHTML = '<li class="empty">游戏数据加载失败，请刷新重试</li>';
+                gamesState = 'error';
+                if (grid) grid.innerHTML = '<li class="empty">游戏数据加载失败，请再次点击搜索、全部游戏或随机游戏重试</li>';
             });
     }
 
