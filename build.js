@@ -69,20 +69,38 @@ function sharePageHtml(name, id) {
         '</html>\n';
 }
 
-function generateSharePages() {
+const GAME_ID_RE = /^[a-f0-9]{16}$/;
+
+function readGames() {
     // 兼容编辑器意外写入的 UTF-8 BOM，避免 JSON.parse 构建失败。
     const gamesText = fs.readFileSync(path.join(ROOT, 'games.json'), 'utf8').replace(/^\uFEFF/, '');
     const games = JSON.parse(gamesText);
     if (!Array.isArray(games) || games.length === 0) {
         throw new Error('games.json 为空或格式不正确');
     }
+
+    const ids = new Set();
+    games.forEach(function (game, index) {
+        if (!game || Array.isArray(game) || typeof game !== 'object') {
+            throw new Error('games.json 第 ' + (index + 1) + ' 条必须是对象');
+        }
+        if (!GAME_ID_RE.test(game.id || '')) {
+            throw new Error('games.json 第 ' + (index + 1) + ' 条 id 必须是 16 位小写十六进制字符');
+        }
+        if (ids.has(game.id)) {
+            throw new Error('games.json 中存在重复 id：' + game.id);
+        }
+        ids.add(game.id);
+    });
+    return games;
+}
+
+function generateSharePages() {
+    const games = readGames();
     const dir = path.join(OUT, 'g');
     fs.mkdirSync(dir, { recursive: true });
-    for (let i = 0; i < games.length; i++) {
-        const game = games[i];
-        const name = Array.isArray(game) ? ((game && game[0]) || '') : ((game && game.name) || '');
-        const id = i.toString(36);
-        fs.writeFileSync(path.join(dir, 's' + id + '.html'), sharePageHtml(name, id));
+    for (const game of games) {
+        fs.writeFileSync(path.join(dir, 's' + game.id + '.html'), sharePageHtml(game.name || '', game.id));
     }
     return games.length;
 }

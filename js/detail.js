@@ -43,14 +43,9 @@
 
     bindBackNavigation();
 
-    function b36toIndex(s) {
-        if (!/^[0-9a-z]+$/i.test(s)) return -1;
-        return parseInt(s, 36);
-    }
-
     function getGParam() {
         var m = location.search.match(/[?&]g=([^&]+)/);
-        return m ? m[1] : null;
+        return m ? decodeURIComponent(m[1]) : null;
     }
 
     // 依据下载链接推断来源（优先使用数据的 source 字段）
@@ -213,12 +208,20 @@
             })
             .then(function (data) {
                 data = data || [];
-                var idx = (g === null) ? -1 : b36toIndex(g);
-                if (idx < 0 || idx >= data.length) {
+                var game = null;
+                if (g !== null) {
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i] && data[i].id === g) {
+                            game = data[i];
+                            break;
+                        }
+                    }
+                }
+                if (!game) {
                     setNotFound();
                     return;
                 }
-                render(g, data[idx]);
+                render(g, game);
             })
             .catch(function () {
                 setNotFound('游戏数据加载失败，请刷新重试。');

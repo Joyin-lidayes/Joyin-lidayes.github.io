@@ -335,12 +335,11 @@
             })
             .then(function (data) {
                 if (!Array.isArray(data) || data.length === 0) throw new Error('empty catalogue');
-                GAMES = data.map(function (game, idx) {
-                    var isLegacy = Array.isArray(game);
+                GAMES = data.map(function (game) {
                     return {
-                        id: idx.toString(36),
-                        name: isLegacy ? ((game && game[0]) || '') : ((game && game.name) || ''),
-                        src: isLegacy ? ((game && game[1]) || '') : ((game && game.url) || '')
+                        id: (game && game.id) || '',
+                        name: (game && game.name) || '',
+                        src: (game && game.url) || ''
                     };
                 });
 
