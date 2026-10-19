@@ -73,7 +73,8 @@
         var author = isLegacy ? 'Joyin' : ((game && game.contributor) || 'Joyin');
         var cover = isLegacy ? '../img/none.png' : ((game && game.icon) || '../img/none.png');
         var desc = isLegacy ? '暂无简介信息' : ((game && game.description) || '暂无简介信息');
-        var code = isLegacy ? '无提取码' : ((game && game.extractCode) || '无提取码');
+        // 提取码没有默认展示值：必须在 JSON 中明确填写有效值才显示。
+        var code = isLegacy ? '' : ((game && game.extractCode) || '');
         var sourceName = isLegacy ? '' : ((game && game.source) || '');
 
         current = { id: id, name: name, src: src };
@@ -105,10 +106,10 @@
         }
         if (contributor) contributor.textContent = author;
         if (source) source.textContent = sourceName || detectSource(src) || '暂无详细信息';
-        // 「无提取码」为默认值，不展示信息行；只有填写实际提取码时显示。
-        var hasExtractCode = code && code !== '无提取码';
+        // 仅当 JSON 中明确填写有效提取码时显示；空值或「无提取码」都不显示。
+        var hasExtractCode = String(code).trim() && String(code).trim() !== '无提取码';
         if (extractCodeRow) extractCodeRow.hidden = !hasExtractCode;
-        if (extractCode) extractCode.textContent = hasExtractCode ? code : '';
+        if (extractCode) extractCode.textContent = hasExtractCode ? String(code).trim() : '';
     }
 
     function buildShareUrl() {

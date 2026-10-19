@@ -172,6 +172,9 @@
     border-bottom: 1px solid var(--border-soft);
 }
 
+/* 无提取码时由 hidden 属性彻底移除该行。 */
+.extract-code-row[hidden] { display: none; }
+
 .info-row dt {
     display: inline-flex;
     align-items: center;
