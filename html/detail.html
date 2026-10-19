@@ -36,40 +36,69 @@
         </div>
     </header>
 
-    <main class="container">
-        <div class="card detail-card">
-            <div class="detail-head">
-                <img id="gameImg" src="../img/none.png" alt="暂无图片">
-                <div class="detail-head-text">
-                    <p class="detail-tag mono">GAME · 游戏详情</p>
-                    <h1 id="gameTitle">游戏详情</h1>
-                </div>
-            </div>
+    <main class="container detail-page">
+        <a class="back-link" href="../index.html#games" aria-label="返回游戏列表">
+            <span aria-hidden="true">←</span> 返回游戏列表
+        </a>
 
-            <div class="texts">
-                <h3>简介</h3>
-                <h5 id="intro">暂无详细介绍</h5>
-            </div>
-
-            <div class="dl">
-                <a id="download" class="btn btn-primary btn-block" href="#" target="_blank" rel="noopener">点击下载</a>
-                <button id="shareBtn" class="btn btn-block" type="button">分享游戏</button>
-            </div>
-
-            <div class="meta-rows">
-                <div class="meta-row">
-                    <span>压缩包所含分辨率</span>
-                    <span class="muted">暂无详细信息</span>
+        <article class="card detail-card">
+            <header class="game-hero">
+                <div class="game-icon-wrap">
+                    <img id="gameImg" src="../img/none.png" alt="暂无图片">
                 </div>
-                <div class="meta-row">
-                    <span>压缩包大小</span>
-                    <span class="muted">暂无详细信息</span>
+                <div class="game-summary">
+                    <div class="game-title-line">
+                        <h1 id="gameTitle"><span id="gameName">游戏详情</span></h1>
+                        <span id="gameTypeTag" class="format-tag" hidden></span>
+                    </div>
+                    <p class="game-subtitle">塞班 Java 怀旧手机游戏</p>
+                    <div class="game-actions">
+                        <a id="download" class="btn btn-primary" href="#" target="_blank" rel="noopener">↓ 立即下载</a>
+                        <button id="shareBtn" class="btn" type="button">↗ 分享游戏</button>
+                    </div>
                 </div>
+            </header>
+
+            <div class="detail-content">
+                <section class="detail-section intro-section" aria-labelledby="introHeading">
+                    <h2 id="introHeading">游戏简介</h2>
+                    <p id="intro">暂无简介</p>
+                </section>
+
+                <aside class="detail-section game-info" aria-labelledby="infoHeading">
+                    <h2 id="infoHeading">游戏信息</h2>
+                    <dl class="info-list">
+                        <div class="info-row">
+                            <dt>
+                                <svg class="info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" /></svg>
+                                贡献者
+                            </dt>
+                            <dd id="contributor">暂无详细信息</dd>
+                        </div>
+                        <div class="info-row">
+                            <dt>
+                                <svg class="info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 13.5 13.5 10.5M7.4 16.6l-1.2 1.2a3.5 3.5 0 0 1-5-5L5.5 8.5a3.5 3.5 0 0 1 5 0M16.6 7.4l1.2-1.2a3.5 3.5 0 0 1 5 5l-4.3 4.3a3.5 3.5 0 0 1-5 0" /></svg>
+                                下载来源
+                            </dt>
+                            <dd id="source">暂无详细信息</dd>
+                        </div>
+                        <div id="extractCodeRow" class="info-row extract-code-row" hidden>
+                            <dt>
+                                <svg class="info-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></svg>
+                                提取码
+                            </dt>
+                            <dd class="code-line">
+                                <code id="extractCode"></code>
+                                <button id="copyCodeBtn" class="copy-code-btn" type="button">复制</button>
+                            </dd>
+                        </div>
+                    </dl>
+                </aside>
             </div>
-        </div>
+        </article>
 
         <p class="foot-note">
-            <a href="https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi" target="_blank" rel="noopener">如果发现信息有误或有更好的信息源，欢迎联系我！</a>
+            <a href="https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi" target="_blank" rel="noopener">信息有误？联系我补充或修正</a>
         </p>
     </main>
 

@@ -77,7 +77,8 @@ function generateSharePages() {
     const dir = path.join(OUT, 'g');
     fs.mkdirSync(dir, { recursive: true });
     for (let i = 0; i < games.length; i++) {
-        const name = (games[i] && games[i][0]) || '';
+        const game = games[i];
+        const name = Array.isArray(game) ? ((game && game[0]) || '') : ((game && game.name) || '');
         const id = i.toString(36);
         fs.writeFileSync(path.join(dir, 's' + id + '.html'), sharePageHtml(name, id));
     }
