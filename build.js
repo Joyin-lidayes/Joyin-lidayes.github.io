@@ -70,7 +70,9 @@ function sharePageHtml(name, id) {
 }
 
 function generateSharePages() {
-    const games = JSON.parse(fs.readFileSync(path.join(ROOT, 'games.json'), 'utf8'));
+    // 兼容编辑器意外写入的 UTF-8 BOM，避免 JSON.parse 构建失败。
+    const gamesText = fs.readFileSync(path.join(ROOT, 'games.json'), 'utf8').replace(/^\uFEFF/, '');
+    const games = JSON.parse(gamesText);
     if (!Array.isArray(games) || games.length === 0) {
         throw new Error('games.json 为空或格式不正确');
     }
