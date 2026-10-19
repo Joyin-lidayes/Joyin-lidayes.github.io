@@ -21,8 +21,27 @@
     var extractCode = document.getElementById('extractCode');
     var copyCodeBtn = document.getElementById('copyCodeBtn');
     var shareBtn = document.getElementById('shareBtn');
+    var backToGames = document.getElementById('backToGames');
 
     var current = null; // { id, name, src }
+
+    function bindBackNavigation() {
+        if (!backToGames) return;
+        backToGames.addEventListener('click', function (e) {
+            // 从首页进入详情页时优先回退历史记录，以恢复原页面而非重新加载。
+            try {
+                var referrer = new URL(document.referrer);
+                var sameSite = referrer.origin === location.origin;
+                var isHome = /\/(?:index\.html)?$/.test(referrer.pathname);
+                if (sameSite && isHome && history.length > 1) {
+                    e.preventDefault();
+                    history.back();
+                }
+            } catch (err) { /* 无来源页面时继续使用链接兜底 */ }
+        });
+    }
+
+    bindBackNavigation();
 
     function b36toIndex(s) {
         if (!/^[0-9a-z]+$/i.test(s)) return -1;
