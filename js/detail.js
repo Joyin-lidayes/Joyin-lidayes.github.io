@@ -87,8 +87,8 @@
         // 以下字段在 games.json 缺省时统一使用站点默认值；有差异时才需要写入 JSON。
         var type = isLegacy ? 'jar' : ((game && game.type) || 'jar');
         var author = isLegacy ? 'Joyin' : ((game && game.contributor) || 'Joyin');
-        // 未指定封面时按游戏 ID 从 Cloudinary 加载；加载失败后才回退默认图。
-        var cover = isLegacy ? (DEFAULT_COVER_BASE + id + '.png') : ((game && game.icon) || (DEFAULT_COVER_BASE + id + '.png'));
+        // 详情页封面始终按游戏 ID 从 Cloudinary 加载；仅加载失败时才回退默认图。
+        var cover = DEFAULT_COVER_BASE + id + '.png';
         var desc = isLegacy ? '暂无简介信息' : ((game && game.description) || '暂无简介信息');
         // 提取码没有默认展示值：必须在 JSON 中明确填写有效值才显示。
         var code = isLegacy ? '' : ((game && game.extractCode) || '');
