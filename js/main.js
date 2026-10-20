@@ -10,6 +10,7 @@
     'use strict';
 
     var GAMES = [];          // [{ id, name }]
+    var gamesById = {};      // { id: game }，用于恢复随机推荐的原始列表
     var pendingAction = null; // 数据加载完成后执行最后一次操作
     var gamesState = 'idle'; // idle / loading / ready / error
     var pageSize = 100;
@@ -42,15 +43,36 @@
     var currentList = [];
     var viewState = null;
     var VIEW_STATE_KEY = 'gameListView';
+    var VISITED_GAMES_KEY = 'visitedGameIds';
+    var visitedGameIds = getVisitedGameIds();
 
     function saveViewState() {
         if (!viewState || !window.store) return;
         var state = {
             view: viewState,
             page: currentPage,
-            pageSize: pageSize
+            pageSize: pageSize,
+            // 点击详情页前保存当前位置；返回或刷新后恢复到用户离开的位置。
+            scrollY: Math.max(0, window.scrollY || window.pageYOffset || 0)
         };
         try { window.store.set(VIEW_STATE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+    }
+
+    // 已访问标记只在当前标签页会话内有效，不写 Cookie/localStorage。
+    function getVisitedGameIds() {
+        try {
+            var raw = window.sessionStorage.getItem(VISITED_GAMES_KEY);
+            var ids = raw ? JSON.parse(raw) : [];
+            return Array.isArray(ids) ? ids : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function markGameVisited(id) {
+        if (visitedGameIds.indexOf(id) >= 0) return;
+        visitedGameIds.push(id);
+        try { window.sessionStorage.setItem(VISITED_GAMES_KEY, JSON.stringify(visitedGameIds)); } catch (e) { /* ignore */ }
     }
 
     function getSavedViewState() {
@@ -99,10 +121,23 @@
 
     function cardHtml(g) {
         var displayName = truncateName(g.name);
-        return '<li class="game-card"><a href="g/s' + g.id + '.html" title="' + escapeHtml(g.name) + '">' +
+        var visitedClass = visitedGameIds.indexOf(g.id) >= 0 ? ' is-visited' : '';
+        return '<li class="game-card' + visitedClass + '"><a href="g/s' + g.id + '.html" data-game-id="' + escapeHtml(g.id) + '" title="' + escapeHtml(g.name) + '">' +
             '<span class="game-icon mono">▶</span>' +
             '<span class="game-name">' + escapeHtml(displayName) + '</span>' +
             '</a></li>';
+    }
+
+    function bindGameCardLinks() {
+        var links = grid ? grid.querySelectorAll('a[data-game-id]') : [];
+        for (var i = 0; i < links.length; i++) {
+            links[i].addEventListener('click', function () {
+                markGameVisited(this.getAttribute('data-game-id'));
+                // 让浏览器后退命中 bfcache 时也能立即保留已访问外观。
+                if (this.parentNode) this.parentNode.classList.add('is-visited');
+                saveViewState();
+            });
+        }
     }
 
     function totalPages() {
@@ -117,6 +152,7 @@
             frag += cardHtml(currentList[i]);
         }
         grid.innerHTML = frag;
+        bindGameCardLinks();
         updateMeta();
     }
 
@@ -223,7 +259,7 @@
         var savedIds = state && state.view && state.view.ids;
         if (savedIds) {
             for (var i = 0; i < savedIds.length; i++) {
-                if (GAMES[savedIds[i]]) arr.push(GAMES[savedIds[i]]);
+                if (gamesById[savedIds[i]]) arr.push(gamesById[savedIds[i]]);
             }
         } else {
             for (var j = 0; j < n; j++) {
@@ -236,6 +272,13 @@
         });
     }
 
+    function restoreScrollPosition(state) {
+        var y = state && parseInt(state.scrollY, 10);
+        if (!y) return;
+        // 等待列表渲染和浏览器 hash 定位结束后，再精确回到离开前的位置。
+        window.setTimeout(function () { window.scrollTo(0, y); }, 0);
+    }
+
     function restoreViewState() {
         var state = getSavedViewState();
         if (!state || !state.view) return false;
@@ -246,14 +289,17 @@
         if (state.view.type === 'search' && state.view.query) {
             if (input) input.value = state.view.query;
             runSearch(state.view.query, state);
+            restoreScrollPosition(state);
             return true;
         }
         if (state.view.type === 'random' && state.view.ids) {
             showRandom(state);
+            restoreScrollPosition(state);
             return true;
         }
         if (state.view.type === 'all') {
             showAll(state);
+            restoreScrollPosition(state);
             return true;
         }
         return false;
@@ -351,6 +397,8 @@
                     return game.id && game.name;
                 });
                 if (GAMES.length === 0) throw new Error('invalid catalogue');
+                gamesById = {};
+                GAMES.forEach(function (game) { gamesById[game.id] = game; });
 
                 if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
                 if (heroCount) heroCount.textContent = GAMES.length;

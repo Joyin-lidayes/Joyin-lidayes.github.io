@@ -133,7 +133,7 @@ function detailPageHtml(game) {
         '<header class="site-header"><div class="container nav"><a class="brand" href="../index.html"><span class="logo">J</span><span>jar游戏小站</span></a>' +
         '<button class="nav-toggle" aria-label="打开菜单" aria-expanded="false"><span></span><span></span><span></span></button>' +
         '<nav class="nav-links"><a href="../index.html">首页</a><a href="../html/friend.html">友链</a><a href="../html/QandA.html">Q&amp;A</a><a href="../html/donation.html">捐赠</a></nav></div></header>\n' +
-        '<main class="container detail-page"><a class="back-link" href="../index.html#games" aria-label="返回游戏列表"><span aria-hidden="true">←</span> 返回游戏列表</a>' +
+        '<main class="container detail-page"><a class="back-link" id="backToGames" href="../index.html" aria-label="返回游戏列表"><span aria-hidden="true">←</span> 返回游戏列表</a>' +
         '<article class="card detail-card"><header class="game-hero"><div class="game-icon-wrap is-loading" id="gameIconWrap" aria-busy="true"><span class="game-icon-loader" aria-hidden="true"></span><img id="gameImg" src="' + escapeHtml(icon) + '" alt="' + escapeHtml(name + '封面') + '"></div>' +
         '<div class="game-summary"><div class="game-title-line"><h1>' + escapeHtml(name) + '</h1><span class="format-tag">' + escapeHtml(type) + '</span></div>' +
         '<p class="game-subtitle">塞班 Java 怀旧手机游戏</p><div class="game-actions"><a class="btn btn-primary" href="' + escapeHtml(url) + '" target="_blank" rel="noopener">↓ 立即下载</a><button id="shareBtn" class="btn" type="button">↗ 分享游戏</button></div></div></header>' +
@@ -143,6 +143,7 @@ function detailPageHtml(game) {
         '<p class="foot-note"><a href="https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi" target="_blank" rel="noopener">信息有误？联系我补充或修正</a></p></main>' +
         '<footer class="site-footer"><p>© Joyin · jar游戏小站 · <a href="../index.html">返回首页</a></p></footer>\n' +
         '<script src="../js/common.js"></script>\n<script>(function(){\n' +
+        'var back=document.getElementById("backToGames");if(back)back.addEventListener("click",function(e){if(document.referrer&&document.referrer.indexOf(location.origin)===0){e.preventDefault();history.back();}});\n' +
         'var img=document.getElementById("gameImg"),iconWrap=document.getElementById("gameIconWrap");function finishCoverLoading(){if(iconWrap){iconWrap.classList.remove("is-loading");iconWrap.setAttribute("aria-busy","false");}}if(img){img.onload=finishCoverLoading;img.onerror=function(){if(this.getAttribute("data-fallback")){finishCoverLoading();return;}this.setAttribute("data-fallback","1");this.src="../img/none.png";};if(img.complete)finishCoverLoading();}\n' +
         'var share=document.getElementById("shareBtn"),url=' + JSON.stringify(pageUrl) + ',text=' + JSON.stringify(shareText) + ';\n' +
         'function fallbackCopy(value){var ta=document.createElement("textarea");ta.value=value;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");window.toast("已复制游戏分享文案，去QQ/微信粘贴给好友");}catch(e){window.toast("复制失败，请长按复制页面链接");}document.body.removeChild(ta);}\n' +

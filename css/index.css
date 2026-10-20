@@ -215,6 +215,13 @@
     white-space: nowrap;
 }
 
+/* 仅当前标签页会话内标记：已浏览游戏使用柔和灰绿色，仍保持可点击。 */
+.game-card.is-visited a,
+.game-card.is-visited .game-icon,
+.game-card.is-visited a::after {
+    color: #557a6d;
+}
+
 .empty {
     grid-column: 1 / -1;
     text-align: center;
@@ -541,6 +548,16 @@
     .game-card a:hover {
         border-color: var(--accent);
         color: var(--accent);
+    }
+
+    .game-card.is-visited a {
+        border-color: #a9beb5;
+        background: #f7faf8;
+    }
+
+    .game-card.is-visited a:hover {
+        border-color: #557a6d;
+        color: #3f6256;
     }
 
     .game-card a:active {
