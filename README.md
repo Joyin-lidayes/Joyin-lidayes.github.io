@@ -12,7 +12,7 @@
     "url": "https://example.com/download",
     "type": "jar",
     "contributor": "Joyin",
-    "icon": "../img/none.png",
+    "icon": "https://example.com/cover.png",
     "description": "游戏简介。",
     "extractCode": "abcd",
     "source": "蓝奏云"
@@ -29,7 +29,7 @@
 | `url` | **必须** | 字符串 | 下载地址；详情页“立即下载”按钮跳转到此地址。建议填写完整的 `https://` 链接。 |
 | `type` | 可选 | 字符串 | 游戏类型标签，例如 `jar`、`sis`。未填写时显示 `jar`。 |
 | `contributor` | 可选 | 字符串 | 贡献者/整理者名称。未填写时显示 `Joyin`。 |
-| `icon` | 可选 | 字符串 | 详情页封面图片地址。未填写时使用 `../img/none.png`。相对路径会以 `html/detail.html` 所在目录为基准，例如站内图片可写 `../img/cover.png`。 |
+| `icon` | 可选 | 字符串 | 详情页封面图片地址。未填写时使用 `https://res.cloudinary.com/exnfmed6/image/upload/jarsite_games_icon/icon_game.<id>.png`（其中 `<id>` 为该游戏 ID）；该图片加载失败时才回退到 `../img/none.png`。相对路径会以 `html/detail.html` 所在目录为基准，例如站内图片可写 `../img/cover.png`。 |
 | `description` | 可选 | 字符串 | 详情页中的游戏简介，按纯文本显示。未填写时显示“暂无简介信息”。 |
 | `extractCode` | 可选 | 字符串 | 网盘提取码。仅填写非空且不为 `无提取码` 的值时，详情页才会显示并提供复制按钮。 |
 | `source` | 可选 | 字符串 | 下载来源名称，例如 `蓝奏云`、`百度网盘`。未填写时，页面会根据 `url` 自动识别；无法识别时显示链接域名。 |
