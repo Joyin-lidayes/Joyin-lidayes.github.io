@@ -15,6 +15,7 @@
     var gameNameEl = document.getElementById('gameName');
     var download = document.getElementById('download');
     var img = document.getElementById('gameImg');
+    var gameIconWrap = document.getElementById('gameIconWrap');
     var intro = document.getElementById('intro');
     var gameTypeTag = document.getElementById('gameTypeTag');
     var contributor = document.getElementById('contributor');
@@ -112,14 +113,27 @@
         }
 
         if (img) {
-            img.onerror = function () {
-                // 避免 none.png 本身不可用时产生循环请求。
-                if (img.src !== new URL(FALLBACK_COVER, location.href).href) {
-                    img.src = FALLBACK_COVER;
+            if (gameIconWrap) {
+                gameIconWrap.classList.add('is-loading');
+                gameIconWrap.setAttribute('aria-busy', 'true');
+            }
+            img.onload = function () {
+                if (gameIconWrap) {
+                    gameIconWrap.classList.remove('is-loading');
+                    gameIconWrap.setAttribute('aria-busy', 'false');
                 }
             };
-            img.src = cover || FALLBACK_COVER;
-            img.alt = name;
+            img.onerror = function () {
+                // Cloudinary 图片失败后才请求默认图；默认图也失败时停止加载状态。
+                if (img.src !== new URL(FALLBACK_COVER, location.href).href) {
+                    img.src = FALLBACK_COVER;
+                } else if (gameIconWrap) {
+                    gameIconWrap.classList.remove('is-loading');
+                    gameIconWrap.setAttribute('aria-busy', 'false');
+                }
+            };
+            img.src = cover;
+            img.alt = name ? name + '封面' : '游戏封面';
         }
 
         if (intro) intro.textContent = desc;

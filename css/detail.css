@@ -45,6 +45,7 @@
 
 .game-icon-wrap {
     display: grid;
+    position: relative;
     flex: 0 0 auto;
     place-items: center;
     width: 112px;
@@ -61,6 +62,31 @@
     border-radius: 4px;
     object-fit: contain;
     background: var(--surface);
+    opacity: 1;
+    transition: opacity 0.18s ease;
+}
+
+.game-icon-wrap.is-loading img {
+    opacity: 0;
+}
+
+.game-icon-loader {
+    display: none;
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border: 3px solid color-mix(in srgb, var(--accent) 20%, transparent);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: game-icon-spin 0.75s linear infinite;
+}
+
+.game-icon-wrap.is-loading .game-icon-loader {
+    display: block;
+}
+
+@keyframes game-icon-spin {
+    to { transform: rotate(360deg); }
 }
 
 .game-summary {
