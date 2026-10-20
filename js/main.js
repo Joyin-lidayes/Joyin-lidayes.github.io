@@ -1,6 +1,6 @@
 /* =========================================================
    jar 游戏小站 · 首页逻辑（原生 JS，无 jQuery）
-   - 数据来自 games.json（一行一个游戏：[名字, 链接]）
+   - 数据来自构建生成的轻量首页索引（[id, 名称]）
    - 搜索 / 全部游戏 / 随机游戏
    - 分页渲染（上一页/下一页 + 可输入页码跳转 + 每页条数选择）
    - 公告弹窗、QQ 群复制、回到顶部
@@ -9,7 +9,7 @@
 (function () {
     'use strict';
 
-    var GAMES = [];          // [{ id, name, src }]
+    var GAMES = [];          // [{ id, name }]
     var pendingAction = null; // 数据加载完成后执行最后一次操作
     var gamesState = 'idle'; // idle / loading / ready / error
     var pageSize = 100;
@@ -99,7 +99,7 @@
 
     function cardHtml(g) {
         var displayName = truncateName(g.name);
-        return '<li class="game-card"><a href="html/detail.html?g=' + g.id + '" title="' + escapeHtml(g.name) + '">' +
+        return '<li class="game-card"><a href="g/s' + g.id + '.html" title="' + escapeHtml(g.name) + '">' +
             '<span class="game-icon mono">▶</span>' +
             '<span class="game-name">' + escapeHtml(displayName) + '</span>' +
             '</a></li>';
@@ -322,26 +322,35 @@
             });
     }
 
-    /* ---------- 游戏数据加载（games.json） ---------- */
+    /* ---------- 游戏索引加载（构建生成的 [id, 名称]） ---------- */
     function loadGames() {
         if (gamesState === 'loading' || gamesState === 'ready') return;
         gamesState = 'loading';
         if (grid) grid.innerHTML = '<li class="empty">正在加载游戏列表…</li>';
 
-        fetch(BASE + 'games.json')
+        var config = window.SITE_CONFIG || {};
+        if (!config.gamesIndexUrl) {
+            gamesState = 'error';
+            if (grid) grid.innerHTML = '<li class="empty">游戏索引配置缺失，请刷新后重试</li>';
+            return;
+        }
+
+        fetch(BASE + config.gamesIndexUrl)
             .then(function (r) {
                 if (!r.ok) throw new Error('http ' + r.status);
                 return r.json();
             })
             .then(function (data) {
                 if (!Array.isArray(data) || data.length === 0) throw new Error('empty catalogue');
-                GAMES = data.map(function (game) {
+                GAMES = data.map(function (row) {
                     return {
-                        id: (game && game.id) || '',
-                        name: (game && game.name) || '',
-                        src: (game && game.url) || ''
+                        id: (row && row[0]) || '',
+                        name: (row && row[1]) || ''
                     };
+                }).filter(function (game) {
+                    return game.id && game.name;
                 });
+                if (GAMES.length === 0) throw new Error('invalid catalogue');
 
                 if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
                 if (heroCount) heroCount.textContent = GAMES.length;
