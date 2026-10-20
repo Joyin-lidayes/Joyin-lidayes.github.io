@@ -113,26 +113,40 @@
         }
 
         if (img) {
-            if (gameIconWrap) {
-                gameIconWrap.classList.add('is-loading');
-                gameIconWrap.setAttribute('aria-busy', 'true');
-            }
-            img.onload = function () {
+            var coverAttempts = 0;
+            var maxCoverAttempts = 3;
+            var fallbackUrl = new URL(FALLBACK_COVER, location.href).href;
+
+            function finishCoverLoading() {
                 if (gameIconWrap) {
                     gameIconWrap.classList.remove('is-loading');
                     gameIconWrap.setAttribute('aria-busy', 'false');
                 }
-            };
+            }
+
+            function loadCover() {
+                coverAttempts += 1;
+                // 重试时添加参数，避免移动端/CDN 复用已失败的缓存连接。
+                var retrySuffix = coverAttempts > 1 ? '?retry=' + Date.now() : '';
+                img.src = cover + retrySuffix;
+            }
+
+            if (gameIconWrap) {
+                gameIconWrap.classList.add('is-loading');
+                gameIconWrap.setAttribute('aria-busy', 'true');
+            }
+            img.onload = finishCoverLoading;
             img.onerror = function () {
-                // Cloudinary 图片失败后才请求默认图；默认图也失败时停止加载状态。
-                if (img.src !== new URL(FALLBACK_COVER, location.href).href) {
+                if (img.src === fallbackUrl) {
+                    finishCoverLoading();
+                } else if (coverAttempts < maxCoverAttempts) {
+                    window.setTimeout(loadCover, coverAttempts * 500);
+                } else {
+                    // Cloudinary 连续失败后才显示默认图。
                     img.src = FALLBACK_COVER;
-                } else if (gameIconWrap) {
-                    gameIconWrap.classList.remove('is-loading');
-                    gameIconWrap.setAttribute('aria-busy', 'false');
                 }
             };
-            img.src = cover;
+            loadCover();
             img.alt = name ? name + '封面' : '游戏封面';
         }
 
