@@ -38,8 +38,8 @@ function text(value, fallback) {
 
 function makeShareDescription(description, name) {
     const value = text(description).replace(/\s+/g, ' ').trim();
-    if (!value) return '「' + name + '」塞班 Java 怀旧手机游戏，点击下载。';
-    return value.length > 90 ? value.slice(0, 90) + '…' : value;
+    if (!value) return '简介：塞班 Java 怀旧手机游戏，点击下载。';
+    return '简介：' + (value.length > 90 ? value.slice(0, 90) + '…' : value);
 }
 
 function readGameIconIds() {
@@ -139,7 +139,8 @@ function detailPageHtml(game, gameIconIds) {
     const pageUrl = SITE_URL + '/g/s' + id + '.html';
     const title = name + ' - 游戏详情';
     const shareDescription = makeShareDescription(description, name);
-    const shareText = '【' + name + '】jar游戏下载';
+    // QQ 等应用的原生分享通道通常优先展示 text；让其与 OG 简介保持一致，避免只显示链接。
+    const shareText = shareDescription;
     const extractCodeRow = extractCode
         ? '<div class="info-row extract-code-row"><dt>提取码</dt><dd class="code-line"><code id="extractCode">' + escapeHtml(extractCode) + '</code><button id="copyCodeBtn" class="copy-code-btn" type="button">复制</button></dd></div>'
         : '';
