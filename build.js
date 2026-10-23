@@ -39,7 +39,7 @@ function text(value, fallback) {
 function makeShareDescription(description, name) {
     const value = text(description).replace(/\s+/g, ' ').trim();
     if (!value) return '「' + name + '」塞班 Java 怀旧手机游戏，点击下载。';
-    return value.length > 90 ? value.slice(0, 90) + '…' : value;
+    return '简介：' + (value.length > 90 ? value.slice(0, 90) + '…' : value);
 }
 
 function readGameIconIds() {
