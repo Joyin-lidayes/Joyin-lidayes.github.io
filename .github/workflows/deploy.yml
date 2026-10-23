@@ -22,6 +22,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Sync Cloudinary game icons
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: node scripts/sync-game-icons.js
       - name: Build site + share pages
         run: node build.js
       - uses: actions/configure-pages@v5

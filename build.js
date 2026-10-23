@@ -15,7 +15,9 @@ const ROOT = __dirname;
 const OUT = path.join(ROOT, '_site');
 const SITE_URL = 'https://joyin-lidayes.github.io';
 const COVER = SITE_URL + '/img/og-image.png';
+const NO_IMAGE = SITE_URL + '/img/none.png';
 const DEFAULT_COVER_BASE = 'https://res.cloudinary.com/exnfmed6/image/upload/jarsite_games_icon/icon_game.';
+const ICON_STATUS_FILE = path.join(ROOT, 'data', 'game-icon-status.json');
 const GAME_ID_RE = /^[a-f0-9]{16}$/;
 
 // 只发布站点运行所需的源文件；games.json、脚本、报告、备份等均不进入 _site。
@@ -32,6 +34,23 @@ function escapeHtml(value) {
 
 function text(value, fallback) {
     return typeof value === 'string' && value.trim() ? value : (fallback || '');
+}
+
+function makeShareDescription(description, name) {
+    const value = text(description).replace(/\s+/g, ' ').trim();
+    if (!value) return '「' + name + '」塞班 Java 怀旧手机游戏，点击下载。';
+    return value.length > 90 ? value.slice(0, 90) + '…' : value;
+}
+
+function readGameIconIds() {
+    if (!fs.existsSync(ICON_STATUS_FILE)) {
+        throw new Error('缺少图标状态清单：data/game-icon-status.json；请先运行 node scripts/sync-game-icons.js');
+    }
+    const status = JSON.parse(fs.readFileSync(ICON_STATUS_FILE, 'utf8').replace(/^\uFEFF/, ''));
+    if (!status || !Array.isArray(status.icons)) {
+        throw new Error('图标状态清单格式不正确：data/game-icon-status.json');
+    }
+    return new Set(status.icons.filter(function (id) { return GAME_ID_RE.test(id); }));
 }
 
 function detectSource(url) {
@@ -103,7 +122,7 @@ function writeGamesIndex(games) {
     return relativeUrl;
 }
 
-function detailPageHtml(game) {
+function detailPageHtml(game, gameIconIds) {
     const id = game.id;
     const name = text(game.name);
     const url = text(game.url);
@@ -113,9 +132,13 @@ function detailPageHtml(game) {
     const source = text(game.source, detectSource(url));
     const rawExtractCode = text(game.extractCode);
     const extractCode = rawExtractCode === '无提取码' ? '' : rawExtractCode;
-    const icon = DEFAULT_COVER_BASE + id + '.png';
+    const cloudinaryIcon = DEFAULT_COVER_BASE + id + '.png';
+    // 详情页没有游戏图标时显示“暂无图片”；分享卡片则保持站点宣传图。
+    const icon = gameIconIds.has(id) ? cloudinaryIcon : NO_IMAGE;
+    const shareImage = gameIconIds.has(id) ? cloudinaryIcon : COVER;
     const pageUrl = SITE_URL + '/g/s' + id + '.html';
     const title = name + ' - 游戏详情';
+    const shareDescription = makeShareDescription(description, name);
     const shareText = '【' + name + '】jar游戏下载';
     const extractCodeRow = extractCode
         ? '<div class="info-row extract-code-row"><dt>提取码</dt><dd class="code-line"><code id="extractCode">' + escapeHtml(extractCode) + '</code><button id="copyCodeBtn" class="copy-code-btn" type="button">复制</button></dd></div>'
@@ -124,10 +147,12 @@ function detailPageHtml(game) {
     return '<!-- 本文件由 build.js 自动生成，请勿手改；改 games.json 后重新构建即可。 -->\n' +
         '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n' +
         '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<meta name="theme-color" content="#e6e8eb">\n' +
+        '<meta name="description" content="' + escapeHtml(shareDescription) + '">\n' +
         '<meta property="og:type" content="website">\n<meta property="og:site_name" content="jar游戏小站">\n' +
         '<meta property="og:title" content="' + escapeHtml(name + ' - jar游戏小站') + '">\n' +
-        '<meta property="og:description" content="' + escapeHtml('「' + name + '」塞班Java(jar)怀旧手机游戏，点击下载。') + '">\n' +
-        '<meta property="og:image" content="' + COVER + '">\n<meta property="og:url" content="' + pageUrl + '">\n' +
+        '<meta property="og:description" content="' + escapeHtml(shareDescription) + '">\n' +
+        '<meta property="og:image" content="' + escapeHtml(shareImage) + '">\n<meta property="og:image:alt" content="' + escapeHtml(name + '图标') + '">\n<meta property="og:image:type" content="image/png">\n<meta property="og:url" content="' + pageUrl + '">\n' +
+        '<meta itemprop="name" content="' + escapeHtml(name + ' - jar游戏小站') + '">\n<meta itemprop="description" content="' + escapeHtml(shareDescription) + '">\n<meta itemprop="image" content="' + escapeHtml(shareImage) + '">\n' +
         '<title>' + escapeHtml(title) + '</title>\n<link rel="icon" href="../favicon.ico">\n' +
         '<link rel="stylesheet" href="../css/base.css">\n<link rel="stylesheet" href="../css/detail.css">\n</head>\n<body>\n' +
         '<header class="site-header"><div class="container nav"><a class="brand" href="../index.html"><span class="logo">J</span><span>jar游戏小站</span></a>' +
@@ -152,19 +177,20 @@ function detailPageHtml(game) {
         '})();</script>\n</body>\n</html>\n';
 }
 
-function generateDetailPages(games) {
+function generateDetailPages(games, gameIconIds) {
     const dir = path.join(OUT, 'g');
     fs.mkdirSync(dir, { recursive: true });
     games.forEach(function (game) {
-        fs.writeFileSync(path.join(dir, 's' + game.id + '.html'), detailPageHtml(game));
+        fs.writeFileSync(path.join(dir, 's' + game.id + '.html'), detailPageHtml(game, gameIconIds));
     });
 }
 
 function main() {
     const games = readGames();
+    const gameIconIds = readGameIconIds();
     copySite();
     const indexUrl = writeGamesIndex(games);
-    generateDetailPages(games);
+    generateDetailPages(games, gameIconIds);
     console.log('built _site OK: ' + games.length + ' detail pages, homepage index ' + indexUrl);
 }
 
