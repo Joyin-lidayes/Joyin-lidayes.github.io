@@ -139,7 +139,7 @@ function detailPageHtml(game, gameIconIds) {
     const pageUrl = SITE_URL + '/g/s' + id + '.html';
     const title = name + ' - 游戏详情';
     const shareDescription = makeShareDescription(description, name);
-    const shareText = '【' + name + '】jar游戏下载';
+    const shareText = name + ' - jar游戏小站';
     const extractCodeRow = extractCode
         ? '<div class="info-row extract-code-row"><dt>提取码</dt><dd class="code-line"><code id="extractCode">' + escapeHtml(extractCode) + '</code><button id="copyCodeBtn" class="copy-code-btn" type="button">复制</button></dd></div>'
         : '';
