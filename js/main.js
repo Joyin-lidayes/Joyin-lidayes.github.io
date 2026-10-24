@@ -452,14 +452,6 @@
             });
         }
 
-        // 我要上传
-        var upload = document.getElementById('upload');
-        if (upload) {
-            upload.addEventListener('click', function () {
-                alert('上传请联系群主（QQ群：580458820）');
-            });
-        }
-
         // 公告里的 QQ 群复制
         var qq = document.getElementById('QQqun');
         if (qq) {
