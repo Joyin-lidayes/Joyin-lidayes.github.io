@@ -178,24 +178,6 @@
     <script src="js/site-config.js"></script>
     <script src="js/main.js"></script>
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <script>
-        (function () {
-            function run() {
-                var m = location.search.match(/[?&]q=([^&]+)/);
-                if (!m) return;
-                var q;
-                try { q = decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch (e) { q = m[1]; }
-                q = (q || '').trim();
-                if (!q) return;
-                if (window.doSearch) window.doSearch(q);
-            }
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', run);
-            } else {
-                run();
-            }
-        })();
-    </script>
 </body>
 
 </html>

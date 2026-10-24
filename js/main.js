@@ -10,10 +10,9 @@
     'use strict';
 
     var GAMES = [];          // [{ id, name }]
-    var gamesById = {};      // { id: game }，用于恢复随机推荐的原始列表
     var pendingAction = null; // 数据加载完成后执行最后一次操作
     var gamesState = 'idle'; // idle / loading / ready / error
-    var pageSize = 100;
+    var pageSize = 60;
     var currentPage = 1;
 
     var BASE = window.SITE_BASE || '';
@@ -86,6 +85,72 @@
     }
 
     /* ---------- 工具 ---------- */
+    var PAGE_SIZES = [12, 20, 60, 100, 200];
+    var RANDOM_SEED_RE = /^[0-9a-f]{1,8}$/i;
+
+    function normalizePageSize(value) {
+        value = parseInt(value, 10);
+        return PAGE_SIZES.indexOf(value) >= 0 ? value : 60;
+    }
+
+    function normalizeSeed(value) {
+        value = String(value || '').trim();
+        if (!RANDOM_SEED_RE.test(value)) return null;
+        return ('00000000' + (parseInt(value, 16) >>> 0).toString(16)).slice(-8);
+    }
+
+    function getUrlState() {
+        var params = new URLSearchParams(window.location.search);
+        var seed = normalizeSeed(params.get('r'));
+        var query = (params.get('q') || '').trim();
+        var requestedSize = params.get('size');
+        return {
+            seed: seed,
+            query: query,
+            page: Math.max(1, parseInt(params.get('page'), 10) || 1),
+            pageSize: requestedSize === null ? null : normalizePageSize(requestedSize),
+            hasView: !!seed || !!query
+        };
+    }
+
+    function syncUrl(mode) {
+        var url = new URL(window.location.href);
+        url.searchParams.delete('q');
+        url.searchParams.delete('r');
+        url.searchParams.delete('page');
+        url.searchParams.delete('size');
+        if (viewState && viewState.type === 'search') {
+            url.searchParams.set('q', viewState.query);
+        } else if (viewState && viewState.type === 'random') {
+            url.searchParams.set('r', viewState.seed);
+        } else {
+            history[mode || 'pushState'](null, '', url.pathname + url.search + url.hash);
+            return;
+        }
+        url.searchParams.set('page', currentPage);
+        url.searchParams.set('size', pageSize);
+        history[mode || 'pushState'](null, '', url.pathname + url.search + url.hash);
+    }
+
+    function createSeededRandom(seed) {
+        return function () {
+            var t = seed += 0x6D2B79F5;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function createRandomSeed() {
+        var values = new Uint32Array(1);
+        if (window.crypto && window.crypto.getRandomValues) {
+            window.crypto.getRandomValues(values);
+            return ('00000000' + values[0].toString(16)).slice(-8);
+        }
+        // 极旧浏览器的降级路径；现代浏览器均会使用上方安全随机源。
+        return ('00000000' + Math.floor(Math.random() * 0x100000000).toString(16)).slice(-8);
+    }
+
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -186,6 +251,7 @@
         currentPage = p;
         renderPage();
         saveViewState();
+        syncUrl('pushState');
         scrollToGames();
     }
 
@@ -232,6 +298,7 @@
             view: { type: 'search', query: kw },
             page: state && state.page
         });
+        if (state && state.syncUrl) syncUrl('pushState');
     }
 
     function search() {
@@ -241,7 +308,7 @@
             input.focus();
             return;
         }
-        runSearch(kw);
+        runSearch(kw, { page: 1, syncUrl: true });
     }
 
     function showAll(state) {
@@ -250,26 +317,24 @@
             view: { type: 'all' },
             page: state && state.page
         });
+        if (!state || !state.fromUrl) syncUrl('pushState');
     }
 
     function showRandom(state) {
         if (waitForGames(function () { showRandom(state); })) return;
         var n = 20;
         var arr = [];
-        var savedIds = state && state.view && state.view.ids;
-        if (savedIds) {
-            for (var i = 0; i < savedIds.length; i++) {
-                if (gamesById[savedIds[i]]) arr.push(gamesById[savedIds[i]]);
-            }
-        } else {
-            for (var j = 0; j < n; j++) {
-                arr.push(GAMES[Math.floor(Math.random() * GAMES.length)]);
-            }
+        var seed = normalizeSeed(state && state.view && state.view.seed) || createRandomSeed();
+        var random = createSeededRandom(parseInt(seed, 16) >>> 0);
+        for (var i = 0; i < n; i++) {
+            // 保持原有的有放回抽样：同一游戏可出现多次。
+            arr.push(GAMES[Math.floor(random() * GAMES.length)]);
         }
         setList(arr, '随机推荐', {
-            view: { type: 'random', ids: arr.map(function (game) { return game.id; }) },
+            view: { type: 'random', seed: seed },
             page: state && state.page
         });
+        if (!state || !state.fromUrl) syncUrl('pushState');
     }
 
     function restoreScrollPosition(state) {
@@ -279,11 +344,27 @@
         window.setTimeout(function () { window.scrollTo(0, y); }, 0);
     }
 
+    function applyUrlState() {
+        var state = getUrlState();
+        if (!state.hasView) return false;
+        if (state.pageSize) {
+            pageSize = state.pageSize;
+            if (pageSizeSel) pageSizeSel.value = pageSize;
+        }
+        if (state.seed) {
+            showRandom({ view: { seed: state.seed }, page: state.page, fromUrl: true });
+            return true;
+        }
+        if (input) input.value = state.query;
+        runSearch(state.query, { page: state.page });
+        return true;
+    }
+
     function restoreViewState() {
         var state = getSavedViewState();
         if (!state || !state.view) return false;
         if (pageSizeSel && state.pageSize) {
-            pageSize = parseInt(state.pageSize, 10) || pageSize;
+            pageSize = normalizePageSize(state.pageSize);
             pageSizeSel.value = pageSize;
         }
         if (state.view.type === 'search' && state.view.query) {
@@ -292,7 +373,7 @@
             restoreScrollPosition(state);
             return true;
         }
-        if (state.view.type === 'random' && state.view.ids) {
+        if (state.view.type === 'random' && state.view.seed) {
             showRandom(state);
             restoreScrollPosition(state);
             return true;
@@ -304,14 +385,6 @@
         }
         return false;
     }
-
-    /* ---------- URL ?q= 搜索（等待数据加载后执行） ---------- */
-    window.doSearch = function (q) {
-        q = (q || '').trim();
-        if (!q) return;
-        if (input) input.value = q;
-        runSearch(q);
-    };
 
     /* ---------- 复制 ---------- */
     function copy(text) {
@@ -397,9 +470,6 @@
                     return game.id && game.name;
                 });
                 if (GAMES.length === 0) throw new Error('invalid catalogue');
-                gamesById = {};
-                GAMES.forEach(function (game) { gamesById[game.id] = game; });
-
                 if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
                 if (heroCount) heroCount.textContent = GAMES.length;
 
@@ -409,7 +479,7 @@
                     var action = pendingAction;
                     pendingAction = null;
                     action();
-                } else if (!restoreViewState() && grid) {
+                } else if (!applyUrlState() && !restoreViewState() && grid) {
                     grid.innerHTML = '';
                 }
             })
@@ -430,6 +500,12 @@
             if (e.key === 'Enter') search();
         });
 
+        window.addEventListener('popstate', function () {
+            if (gamesState === 'ready') {
+                if (!applyUrlState() && grid) grid.innerHTML = '';
+            }
+        });
+
         // 分页
         if (prevBtn) prevBtn.addEventListener('click', function () { goToPage(currentPage - 1); });
         if (nextBtn) nextBtn.addEventListener('click', function () { goToPage(currentPage + 1); });
@@ -444,10 +520,11 @@
         if (pageSizeSel) {
             pageSizeSel.addEventListener('change', function () {
                 var firstIndex = (currentPage - 1) * pageSize;
-                pageSize = parseInt(pageSizeSel.value, 10) || 100;
+                pageSize = normalizePageSize(pageSizeSel.value);
                 currentPage = Math.floor(firstIndex / pageSize) + 1;
                 renderPage();
                 saveViewState();
+                syncUrl('pushState');
                 scrollToGames();
             });
         }
