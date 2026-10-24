@@ -31,6 +31,8 @@
     var footEl = document.getElementById('foot');
     var heroCount = document.getElementById('heroCount');
     var gamesSection = document.getElementById('games');
+    var gamesLoading = document.getElementById('gamesLoading');
+    var gamesLoadingText = document.getElementById('gamesLoadingText');
 
     var pagerEl = document.getElementById('pager');
     var prevBtn = document.getElementById('prevPage');
@@ -235,6 +237,34 @@
 
     function showSection() {
         if (gamesSection) gamesSection.style.display = 'block';
+    }
+
+    function hideSection() {
+        if (gamesSection) gamesSection.style.display = 'none';
+    }
+
+    function showGamesLoading() {
+        showSection();
+        if (!gamesLoading) return;
+        if (gamesLoadingText) gamesLoadingText.textContent = '正在载入游戏库…';
+        gamesLoading.classList.remove('is-error');
+        gamesLoading.classList.add('is-visible');
+        gamesLoading.setAttribute('aria-busy', 'true');
+    }
+
+    function hideGamesLoading() {
+        if (!gamesLoading) return;
+        gamesLoading.classList.remove('is-visible', 'is-error');
+        gamesLoading.setAttribute('aria-busy', 'false');
+    }
+
+    function showGamesLoadError(message) {
+        showSection();
+        if (gamesLoading) {
+            gamesLoading.classList.add('is-visible', 'is-error');
+            gamesLoading.setAttribute('aria-busy', 'false');
+        }
+        if (gamesLoadingText) gamesLoadingText.textContent = message;
     }
 
     function scrollToGames() {
@@ -445,12 +475,14 @@
     function loadGames() {
         if (gamesState === 'loading' || gamesState === 'ready') return;
         gamesState = 'loading';
-        if (grid) grid.innerHTML = '<li class="empty">正在加载游戏列表…</li>';
+        showGamesLoading();
+        if (grid) grid.innerHTML = '';
 
         var config = window.SITE_CONFIG || {};
         if (!config.gamesIndexUrl) {
             gamesState = 'error';
-            if (grid) grid.innerHTML = '<li class="empty">游戏索引配置缺失，请刷新后重试</li>';
+            showGamesLoadError('游戏索引配置缺失，请刷新后重试');
+            if (grid) grid.innerHTML = '';
             return;
         }
 
@@ -475,17 +507,20 @@
 
                 sortedGames = null;
                 gamesState = 'ready';
+                hideGamesLoading();
                 if (pendingAction) {
                     var action = pendingAction;
                     pendingAction = null;
                     action();
                 } else if (!applyUrlState() && !restoreViewState() && grid) {
                     grid.innerHTML = '';
+                    hideSection();
                 }
             })
             .catch(function () {
                 gamesState = 'error';
-                if (grid) grid.innerHTML = '<li class="empty">游戏数据加载失败，请再次点击搜索、全部游戏或随机游戏重试</li>';
+                showGamesLoadError('游戏数据加载失败，请再次点击搜索、全部游戏或随机游戏重试');
+                if (grid) grid.innerHTML = '';
             });
     }
 

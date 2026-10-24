@@ -229,6 +229,45 @@
     padding: 32px 0;
 }
 
+/* 游戏索引首次加载：独立于列表，避免分页渲染覆盖加载状态。 */
+.games-loading {
+    display: none;
+    min-height: 112px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.games-loading.is-visible {
+    display: flex;
+}
+
+.games-loading.is-error .games-loading-spinner {
+    display: none;
+}
+
+.games-loading-spinner {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    border: 3px solid var(--border-soft);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: games-loading-spin 0.75s linear infinite;
+}
+
+@keyframes games-loading-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .games-loading-spinner {
+        animation: none;
+    }
+}
+
 /* 分页（移动端：每页条数占整行） */
 .pager {
     display: flex;
