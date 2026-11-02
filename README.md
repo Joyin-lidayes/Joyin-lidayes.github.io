@@ -50,3 +50,40 @@ node scripts/new-game.js "游戏名称" "下载链接"
 - 新增、排序、改名或更换下载链接时，都不要修改已有的 `id`，否则旧详情页和分享链接会失效。
 - 修改数据后运行 `node build.js`。构建会校验源数据，并生成：首页使用的 `data/games-index.<hash>.json` 轻量索引、`js/site-config.js` 配置和 `_site/g/` 下的单游戏静态详情/分享页。
 - 完整 `games.json`、备份、构建脚本和维护脚本仅作为项目源文件，不会被复制到 `_site` 发布产物。
+
+## 流量统计
+
+站点使用 [Umami Cloud](https://cloud.umami.is)（免费、无 Cookie）统计访问量。统计脚本由 `build.js` 统一注入，首页、`html/` 下的页面和全部详情页都会自动带上，不需要逐页修改。
+
+接入步骤：
+
+1. 登录 Umami Cloud，在 **Websites** 中新增网站，Name 随意，Domain 填 `joyin-lidayes.github.io`。
+2. 打开该网站 → **Edit** → **Tracking code**，复制其中 `data-website-id` 的值。
+3. 在 GitHub 仓库 **Settings → Secrets and variables → Actions** 新增 secret `UMAMI_WEBSITE_ID`，值即上一步的 ID。`.github/workflows/deploy.yml` 已把它传给 `node build.js`。
+4. 推送到 `main` 即可生效，Actions 会重新构建并发布。
+
+本地构建需要手动提供变量（不提供则不注入脚本，方便本地调试）：
+
+```bash
+# Windows PowerShell
+$env:UMAMI_WEBSITE_ID="94db1cb1-74f4-4a40-ad6c-962362670409"; node build.js
+# macOS / Linux
+UMAMI_WEBSITE_ID=94db1cb1-74f4-4a40-ad6c-962362670409 node build.js
+```
+
+`UMAMI_WEBSITE_ID` 留空时构建不注入任何统计脚本，产物与未接入时完全一致；填了但不是合法 UUID 时构建会直接报错，避免把整段 `<script>` 误填进来。脚本带 `data-domains="joyin-lidayes.github.io"`，本地 `localhost` 预览或被 fork 的域名不会计入统计；带 `data-exclude-search="true"`，URL 里的查询参数（如 `?q=龙珠`）不会进入报表，搜索词改用下面的 `搜索` 事件记录。
+
+除页面浏览量外，站点还上报以下事件（在 Umami 的 **Events** 页面查看，可按属性筛选）：
+
+| 事件 | 触发位置 | 附带属性 |
+| --- | --- | --- |
+| `下载` | 详情页「立即下载」按钮 | `game` 游戏名、`id` 游戏 ID |
+| `分享` | 详情页「分享游戏」按钮 | `id` 游戏 ID |
+| `搜索` | 首页搜索（含回车） | `keyword` 搜索词（最长 50 字）、`results` 命中数量（0 = 搜无结果） |
+| `随机游戏` | 首页「随机游戏」按钮 | — |
+| `全部游戏` | 首页「全部游戏」按钮 | — |
+| `上传表单` | 首页「我要上传」链接 | — |
+| `加入群聊` | 首页「加入群聊」链接 | — |
+| `友链` | 友链页点击某个友链卡片 | `site` 友链站点名 |
+
+事件上报失败或被广告拦截器拦截时静默跳过，不影响页面任何功能。

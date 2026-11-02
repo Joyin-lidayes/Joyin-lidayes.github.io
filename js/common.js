@@ -24,6 +24,13 @@
         });
     }
 
+    // 统计事件：Umami 未加载（被广告拦截器挡掉或加载失败）时静默跳过，绝不影响页面功能。
+    function track(name, data) {
+        try {
+            if (window.umami && typeof window.umami.track === 'function') window.umami.track(name, data);
+        } catch (e) { /* ignore */ }
+    }
+
     /* ---------- 移动端导航 ---------- */
     var toggle = document.querySelector('.nav-toggle');
     var nav = document.querySelector('.nav-links');
@@ -175,7 +182,7 @@
                 }
                 var html = '';
                 data.forEach(function (f) {
-                    html += '<a class="card friend-card" href="' + escapeHtml(f.url || '') + '" target="_blank" rel="noopener">' +
+                    html += '<a class="card friend-card" href="' + escapeHtml(f.url || '') + '" target="_blank" rel="noopener" data-friend-name="' + escapeHtml(f.name || '') + '">' +
                         '<img src="' + escapeHtml(BASE + 'friends/' + (f.icon || '')) + '" alt="' + escapeHtml(f.name || '') + '">' +
                         '<span class="f-body">' +
                         '<span class="f-name">' + escapeHtml(f.name || '') + '</span>' +
@@ -183,6 +190,17 @@
                         '</span></a>';
                 });
                 list.innerHTML = html;
+                // 友链是动态渲染的，用事件委托上报点击（onclick 覆盖式绑定，重复加载不会叠加）。
+                list.onclick = function (e) {
+                    var node = e.target;
+                    while (node && node !== list) {
+                        if (node.getAttribute && node.getAttribute('data-friend-name') !== null) {
+                            track('友链', { site: node.getAttribute('data-friend-name') });
+                            return;
+                        }
+                        node = node.parentNode;
+                    }
+                };
             })
             .catch(function () {
                 list.innerHTML = '<p class="muted">友链加载失败</p>';

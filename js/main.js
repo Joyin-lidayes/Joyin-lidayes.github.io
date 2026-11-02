@@ -47,6 +47,13 @@
     var VISITED_GAMES_KEY = 'visitedGameIds';
     var visitedGameIds = getVisitedGameIds();
 
+    // 统计事件：Umami 未加载（被广告拦截器挡掉或加载失败）时静默跳过，绝不影响页面功能。
+    function track(name, data) {
+        try {
+            if (window.umami && typeof window.umami.track === 'function') window.umami.track(name, data);
+        } catch (e) { /* ignore */ }
+    }
+
     function saveViewState() {
         if (!viewState || !window.store) return;
         var state = {
@@ -328,7 +335,11 @@
             view: { type: 'search', query: kw },
             page: state && state.page
         });
-        if (state && state.syncUrl) syncUrl('pushState');
+        if (state && state.syncUrl) {
+            syncUrl('pushState');
+            // 只在用户主动搜索时上报（URL 回放不重复计数），results=0 即“搜了但没有结果”。
+            track('搜索', { keyword: kw.slice(0, 50), results: arr.length });
+        }
     }
 
     function search() {
@@ -528,8 +539,14 @@
     function bind() {
         var searchBtn = document.getElementById('searchBtn');
         if (searchBtn) searchBtn.addEventListener('click', search);
-        document.querySelector('.allGame').addEventListener('click', showAll);
-        document.querySelector('.classGame').addEventListener('click', showRandom);
+        document.querySelector('.allGame').addEventListener('click', function () {
+            track('全部游戏');
+            showAll();
+        });
+        document.querySelector('.classGame').addEventListener('click', function () {
+            track('随机游戏');
+            showRandom();
+        });
 
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') search();

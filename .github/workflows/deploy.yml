@@ -29,6 +29,8 @@ jobs:
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
         run: node scripts/sync-game-icons.js
       - name: Build site + share pages
+        env:
+          UMAMI_WEBSITE_ID: ${{ secrets.UMAMI_WEBSITE_ID }}
         run: node build.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
