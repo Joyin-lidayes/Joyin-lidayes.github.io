@@ -24,7 +24,9 @@
         bigpic.classList.add('open');
         // 只在二维码真的打开后上报，避免元素缺失时产生假点击。
         // 语义是“捐赠意向”（打开收款码），不等于实际到账。
-        track('捐赠', { channel: channel });
+        // 渠道写进事件名而不是事件属性：Umami 的事件列表只按事件名聚合，
+        // 属性值只会出现在 Events 页的“属性”标签里，列表上两个渠道会显示成一模一样的“捐赠”。
+        track('捐赠-' + channel);
     }
 
     if (alipay) alipay.addEventListener('click', function () { show('alipay', '支付宝'); });
