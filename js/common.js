@@ -232,7 +232,21 @@
             });
     }
 
+    /* ---------- 页脚（全站统一注入） ---------- */
+    // footer 文案只在这一处维护：首页、子页、详情页全部由这里渲染，避免各页跑偏。
+    // 免责声明整体可点击，跳转到 QQ 群，方便侵权方联系删除。
+    var FOOTER_GROUP_URL = 'https://qm.qq.com/cgi-bin/qm/qr?k=xBHI7DQ8itJeqWzgngV4oqzfT1dfhOuc&jump_from=webapi';
+
+    function renderFooter() {
+        var footer = document.querySelector('.site-footer');
+        if (!footer) return;
+        var year = new Date().getFullYear();
+        footer.innerHTML = '<p>© 2020 - ' + year + ' Joyin · jar游戏小站 · ' +
+            '<a href="' + FOOTER_GROUP_URL + '" target="_blank" rel="noopener" data-umami-event="加入群聊">本站游戏来源自网络，如有侵权，请联系删除</a></p>';
+    }
+
     initHistory();
     loadQA();
     loadFriends();
+    renderFooter();
 })();
