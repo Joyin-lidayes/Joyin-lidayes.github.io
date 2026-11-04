@@ -43,6 +43,31 @@
         });
     }
 
+    /* ---------- 捐赠入口点击 ---------- */
+    // 导航里的「捐赠」入口在首页、友链、Q&A 和全部详情页各有一份，用事件委托统一上报，
+    // 不必往 1.5 万个详情页模板里逐个加属性。
+    function pageLabel() {
+        var seg = location.pathname.split('/').pop() || '';
+        var lower = seg.toLowerCase();
+        if (!seg || lower === 'index.html') return '首页';
+        if (lower === 'friend.html') return '友链';
+        if (lower === 'qanda.html') return 'Q&A';
+        if (lower === 'donation.html') return '捐赠页';
+        if (/^s[0-9a-f]{16}\.html$/.test(lower)) return '游戏详情';
+        return seg.slice(0, 40);
+    }
+
+    document.addEventListener('click', function (e) {
+        var node = e.target;
+        while (node && node.nodeType === 1 && node.tagName !== 'A') node = node.parentNode;
+        if (!node || node.tagName !== 'A') return;
+        var href = node.getAttribute('href') || '';
+        // 只统计真的指向捐赠页的入口；捐赠页导航里的自身链接（class="active"）跳过。
+        if (!/donation\.html(?:[?#].*)?$/i.test(href)) return;
+        if ((node.getAttribute('class') || '').indexOf('active') >= 0) return;
+        track('捐赠入口', { from: pageLabel() });
+    });
+
     /* ---------- 轻量 Toast ---------- */
     var toastEl = null;
     var toastTimer = null;
