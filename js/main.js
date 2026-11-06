@@ -572,35 +572,67 @@
         }
     }
 
-    // 任一镜像失败或超时后尝试下一源；最后始终回退到本站 GitHub Pages 文件。
-    function fetchIndexText(url, timeoutMs) {
+    // 镜像和本站索引同时请求，完整下载最先成功的一份立即使用，并中止其余请求。
+    // 仅镜像设置超时；本站 GitHub Pages 不设人为超时，以兼容慢速网络。
+    function createIndexRequest(url, timeoutMs) {
         var controller = window.AbortController ? new AbortController() : null;
-        var timer = controller ? window.setTimeout(function () { controller.abort(); }, timeoutMs) : null;
+        var timer = controller && timeoutMs > 0 ? window.setTimeout(function () { controller.abort(); }, timeoutMs) : null;
         var options = controller ? { signal: controller.signal } : {};
-        return fetch(url, options).then(function (r) {
-            if (!r.ok) throw new Error('http ' + r.status);
-            return r.text();
-        }).then(function (text) {
-            if (timer) window.clearTimeout(timer);
-            return text;
-        }, function (error) {
-            if (timer) window.clearTimeout(timer);
-            throw error;
-        });
+        var finished = false;
+        function clearTimer() {
+            if (timer) {
+                window.clearTimeout(timer);
+                timer = null;
+            }
+        }
+        return {
+            url: url,
+            promise: fetch(url, options).then(function (r) {
+                if (!r.ok) throw new Error('http ' + r.status);
+                return r.text();
+            }).then(function (text) {
+                finished = true;
+                clearTimer();
+                return text;
+            }, function (error) {
+                finished = true;
+                clearTimer();
+                throw error;
+            }),
+            cancel: function () {
+                clearTimer();
+                if (!finished && controller) controller.abort();
+            }
+        };
     }
 
-    function loadIndexFromSources(sources, timeoutMs) {
-        var next = 0;
-        function tryNext() {
-            if (next >= sources.length) return Promise.reject(new Error('all index sources failed'));
-            var source = sources[next++];
-            return fetchIndexText(source, timeoutMs).catch(function (error) {
-                // 网络、CORS、超时和非 2xx 响应都会安全地改用下一源。
-                try { console.warn('游戏索引加载失败，尝试备用源：', source, error); } catch (e) { /* ignore */ }
-                return tryNext();
+    function loadIndexFromSources(sources, mirrorTimeoutMs) {
+        return new Promise(function (resolve, reject) {
+            var pending = sources.length;
+            var errors = [];
+            var settled = false;
+            var requests = sources.map(function (source, index) {
+                // 最后一个是本站相对地址：没有前端超时；其余为镜像，快速失败即可。
+                return createIndexRequest(source, index < sources.length - 1 ? mirrorTimeoutMs : 0);
             });
-        }
-        return tryNext();
+
+            requests.forEach(function (request) {
+                request.promise.then(function (text) {
+                    if (settled) return;
+                    settled = true;
+                    requests.forEach(function (other) {
+                        if (other !== request) other.cancel();
+                    });
+                    resolve({ text: text, source: request.url });
+                }, function (error) {
+                    if (settled) return;
+                    errors.push({ source: request.url, error: error });
+                    pending -= 1;
+                    try { console.warn('游戏索引源加载失败：', request.url, error); } catch (e) { /* ignore */ }
+                    if (pending === 0) reject(errors);
+                });
+            });
+        });
     }
 
     function loadGames() {
@@ -634,12 +666,12 @@
         var sources = mirrors.filter(function (url) { return typeof url === 'string' && url; });
         // 相对地址确保始终请求当前 GitHub Pages 站点，而非 jsDelivr。
         sources.push(BASE + config.gamesIndexUrl);
-        var timeoutMs = parseInt(config.gamesIndexTimeoutMs, 10) || 10000;
+        var mirrorTimeoutMs = parseInt(config.gamesIndexTimeoutMs, 10) || 10000;
 
-        loadIndexFromSources(sources, timeoutMs)
-            .then(function (text) {
-                applyIndexText(text);
-                writeIndexCache(cacheKey, text);
+        loadIndexFromSources(sources, mirrorTimeoutMs)
+            .then(function (result) {
+                applyIndexText(result.text);
+                writeIndexCache(cacheKey, result.text);
                 pruneIndexCache(cacheKey);
             })
             .catch(function () {

@@ -53,7 +53,7 @@ node scripts/new-game.js "游戏名称" "下载链接"
 
 ### jsDelivr 游戏索引镜像
 
-首页游戏索引较大，构建后的 `data/games-index.<hash>.json` 会在发布 GitHub Pages 时同步到仓库的 `cdn-data` 分支。首页优先请求 jsDelivr，单个源请求超过 10 秒、网络错误或返回非 2xx 时，自动回退到本站 GitHub Pages 文件；两者共用同一条本地缓存。
+首页游戏索引较大，构建后的 `data/games-index.<hash>.json` 会在发布 GitHub Pages 时同步到仓库的 `cdn-data` 分支。首页会同时请求 jsDelivr 与本站 GitHub Pages，完整下载最先成功的一份立即使用，并中止另一请求；镜像请求超过 10 秒、网络错误或返回非 2xx 时，不影响本站请求继续完成。两者共用同一条本地缓存。
 
 - jsDelivr 地址格式：`https://cdn.jsdelivr.net/gh/Joyin-lidayes/Joyin-lidayes.github.io@cdn-data/data/games-index.<hash>.json`。
 - `cdn-data` 是自动生成分支，请不要手工修改或将其合并进 `main`。
