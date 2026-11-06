@@ -1,6 +1,6 @@
 /* =========================================================
    jar 游戏小站 · 首页逻辑（原生 JS，无 jQuery）
-   - 数据来自构建生成的轻量首页索引（[id, 名称]）
+   - 数据来自构建生成的轻量首页索引（[id, 名称, 拼音全拼, 拼音首字母]）
    - 搜索 / 全部游戏 / 随机游戏
    - 分页渲染（上一页/下一页 + 可输入页码跳转 + 每页条数选择）
    - 公告弹窗、QQ 群复制、回到顶部
@@ -185,6 +185,48 @@
         return sortedGames;
     }
 
+    /* ---------- 搜索匹配（大小写不敏感 / 拼音 / 首字母 / 空格分词） ---------- */
+    function matchTerm(g, t) {
+        return g.n.indexOf(t) >= 0 || g.p.indexOf(t) >= 0 || g.i.indexOf(t) >= 0;
+    }
+
+    function matchAllTerms(g, terms) {
+        for (var k = 0; k < terms.length; k++) {
+            if (!matchTerm(g, terms[k])) return false;
+        }
+        return true;
+    }
+
+    function termScore(g, t) {
+        if (g.n === t) return 0;              // 原名完全相等
+        if (g.n.indexOf(t) === 0) return 1;   // 原名前缀
+        var ni = g.n.indexOf(t);
+        if (ni > 0) return 10 + ni;           // 原名子串，越靠前越优
+        if (g.p.indexOf(t) === 0) return 100; // 全拼前缀
+        if (g.i.indexOf(t) === 0) return 110; // 首字母前缀
+        if (g.p.indexOf(t) >= 0) return 200;  // 全拼子串
+        if (g.i.indexOf(t) >= 0) return 300;  // 首字母子串
+        return 999;
+    }
+
+    function searchGames(kw, games) {
+        var terms = String(kw || '').toLowerCase().split(/\s+/).filter(function (s) { return !!s; });
+        if (terms.length === 0) return [];
+        var scored = [];
+        for (var i = 0; i < games.length; i++) {
+            var g = games[i];
+            if (!matchAllTerms(g, terms)) continue;
+            var total = 0;
+            for (var k = 0; k < terms.length; k++) total += termScore(g, terms[k]);
+            scored.push({ g: g, score: total });
+        }
+        scored.sort(function (a, b) {
+            if (a.score !== b.score) return a.score - b.score;
+            return collator.compare(a.g.name, b.g.name);
+        });
+        return scored.map(function (item) { return item.g; });
+    }
+
     /* ---------- 渲染 ---------- */
     var NAME_LIMIT = 14;
 
@@ -326,11 +368,7 @@
 
     function runSearch(kw, state) {
         if (waitForGames(function () { runSearch(kw, state); })) return;
-        var sorted = getSortedGames();
-        var arr = [];
-        for (var i = 0; i < sorted.length; i++) {
-            if (sorted[i].name.indexOf(kw) >= 0) arr.push(sorted[i]);
-        }
+        var arr = searchGames(kw, getSortedGames());
         setList(arr, '搜索「' + kw + '」的结果', {
             view: { type: 'search', query: kw },
             page: state && state.page
@@ -505,9 +543,13 @@
             .then(function (data) {
                 if (!Array.isArray(data) || data.length === 0) throw new Error('empty catalogue');
                 GAMES = data.map(function (row) {
+                    var name = (row && row[1]) || '';
                     return {
                         id: (row && row[0]) || '',
-                        name: (row && row[1]) || ''
+                        name: name,
+                        n: name.toLowerCase(),
+                        p: (row && row[2]) || '',
+                        i: (row && row[3]) || ''
                     };
                 }).filter(function (game) {
                     return game.id && game.name;

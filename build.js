@@ -10,6 +10,15 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { pinyin, customPinyin } = require('pinyin-pro');
+
+// 手动纠正多音字/专名读音：key 为汉字词组，value 为带声调、逐字对应的标准拼音。
+// 构建期全局生效一次，作用于所有 name（全拼与首字母会一起被修正）。
+// 先用 `pinyin(name, { type: 'all' })` 排查出多音字再补充，勿凭空臆测。
+customPinyin({
+    // '重装机兵': 'chóng zhuāng jī bīng',
+    // '朝歌': 'cháo gē',
+});
 
 const ROOT = __dirname;
 const OUT = path.join(ROOT, '_site');
@@ -150,9 +159,23 @@ function readGames() {
     return games;
 }
 
+/* ---------- 拼音（构建期，供搜索索引使用） ---------- */
+function pinyinFull(text) {
+    return pinyin(text, { toneType: 'none', type: 'array', v: true, nonZh: 'consecutive' })
+        .join('').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function pinyinFirst(text) {
+    return pinyin(text, { pattern: 'first', toneType: 'none', type: 'array', v: true, nonZh: 'consecutive' })
+        .join('').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 function writeGamesIndex(games) {
-    // 首页仅需要稳定 ID 和名称；使用短数组避免为每条记录重复输出字段名。
-    const content = JSON.stringify(games.map(function (game) { return [game.id, game.name]; }));
+    // 首页需要稳定 ID、名称，以及构建期预计算的拼音全拼/首字母；
+    // 使用短数组避免为每条记录重复输出字段名。
+    const content = JSON.stringify(games.map(function (game) {
+        return [game.id, game.name, pinyinFull(game.name), pinyinFirst(game.name)];
+    }));
     const hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
     const relativeUrl = 'data/games-index.' + hash + '.json';
     const dataDir = path.join(OUT, 'data');

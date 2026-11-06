@@ -48,8 +48,15 @@ node scripts/new-game.js "游戏名称" "下载链接"
 
 - `games.json` 必须是有效 JSON：字符串使用双引号，最后一项后不要加逗号。
 - 新增、排序、改名或更换下载链接时，都不要修改已有的 `id`，否则旧详情页和分享链接会失效。
-- 修改数据后运行 `node build.js`。构建会校验源数据，并生成：首页使用的 `data/games-index.<hash>.json` 轻量索引、`js/site-config.js` 配置和 `_site/g/` 下的单游戏静态详情/分享页。
+- 修改数据后运行 `node build.js`（首次需先 `npm install` 安装构建依赖）。构建会校验源数据，并生成：首页使用的 `data/games-index.<hash>.json` 轻量索引（含拼音搜索字段）、`js/site-config.js` 配置和 `_site/g/` 下的单游戏静态详情/分享页。
 - 完整 `games.json`、备份、构建脚本和维护脚本仅作为项目源文件，不会被复制到 `_site` 发布产物。
+
+## 搜索
+
+首页搜索支持：大小写不敏感、空格分词多关键词、中文/拼音全拼/拼音首字母子串匹配，并按相关性排序。拼音由构建脚本用 [pinyin-pro](https://www.npmjs.com/package/pinyin-pro) 在**构建期**预计算写入首页轻量索引，浏览器端不引入拼音库。
+
+- 首次构建前需 `npm install` 安装 devDependency `pinyin-pro`；CI 已配置 `npm ci`。
+- 多音字纠错表在 `build.js` 顶部的 `customPinyin({...})`，按需补充（value 写带声调、逐字对应的拼音）。
 
 ## 流量统计
 

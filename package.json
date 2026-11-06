@@ -1,0 +1,9 @@
+{
+  "name": "jar-game-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "jar 游戏小站",
+  "devDependencies": {
+    "pinyin-pro": "^3.29.5"
+  }
+}
