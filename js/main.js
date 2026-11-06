@@ -45,6 +45,7 @@
     var viewState = null;
     var VIEW_STATE_KEY = 'gameListView';
     var VISITED_GAMES_KEY = 'visitedGameIds';
+    var INDEX_CACHE_PREFIX = 'gamesIndex:';
     var visitedGameIds = getVisitedGameIds();
 
     // 统计事件：Umami 未加载（被广告拦截器挡掉或加载失败）时静默跳过，绝不影响页面功能。
@@ -520,7 +521,88 @@
             });
     }
 
-    /* ---------- 游戏索引加载（构建生成的 [id, 名称]） ---------- */
+    /* ---------- 游戏索引加载（构建生成的 [id, 名称, 拼音全拼, 拼音首字母]） ---------- */
+    // 索引带内容哈希、体积较大，抓到后缓存到 localStorage；哈希变了 key 就变，下次自动重新拉取。
+    function readIndexCache(key) {
+        try { return window.localStorage.getItem(key); } catch (e) { return null; }
+    }
+    function writeIndexCache(key, value) {
+        try { window.localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+    }
+    function pruneIndexCache(keepKey) {
+        try {
+            var remove = [];
+            for (var i = 0; i < window.localStorage.length; i++) {
+                var k = window.localStorage.key(i);
+                if (k && k.indexOf(INDEX_CACHE_PREFIX) === 0 && k !== keepKey) remove.push(k);
+            }
+            for (var j = 0; j < remove.length; j++) window.localStorage.removeItem(remove[j]);
+        } catch (e) { /* ignore */ }
+    }
+
+    function applyIndexText(text) {
+        var data = JSON.parse(text);
+        if (!Array.isArray(data) || data.length === 0) throw new Error('empty catalogue');
+        GAMES = data.map(function (row) {
+            var name = (row && row[1]) || '';
+            return {
+                id: (row && row[0]) || '',
+                name: name,
+                n: name.toLowerCase(),
+                p: (row && row[2]) || '',
+                i: (row && row[3]) || ''
+            };
+        }).filter(function (game) {
+            return game.id && game.name;
+        });
+        if (GAMES.length === 0) throw new Error('invalid catalogue');
+        if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
+        if (heroCount) heroCount.textContent = GAMES.length;
+
+        sortedGames = null;
+        gamesState = 'ready';
+        hideGamesLoading();
+        if (pendingAction) {
+            var action = pendingAction;
+            pendingAction = null;
+            action();
+        } else if (!applyUrlState() && !restoreViewState() && grid) {
+            grid.innerHTML = '';
+            hideSection();
+        }
+    }
+
+    // 任一镜像失败或超时后尝试下一源；最后始终回退到本站 GitHub Pages 文件。
+    function fetchIndexText(url, timeoutMs) {
+        var controller = window.AbortController ? new AbortController() : null;
+        var timer = controller ? window.setTimeout(function () { controller.abort(); }, timeoutMs) : null;
+        var options = controller ? { signal: controller.signal } : {};
+        return fetch(url, options).then(function (r) {
+            if (!r.ok) throw new Error('http ' + r.status);
+            return r.text();
+        }).then(function (text) {
+            if (timer) window.clearTimeout(timer);
+            return text;
+        }, function (error) {
+            if (timer) window.clearTimeout(timer);
+            throw error;
+        });
+    }
+
+    function loadIndexFromSources(sources, timeoutMs) {
+        var next = 0;
+        function tryNext() {
+            if (next >= sources.length) return Promise.reject(new Error('all index sources failed'));
+            var source = sources[next++];
+            return fetchIndexText(source, timeoutMs).catch(function (error) {
+                // 网络、CORS、超时和非 2xx 响应都会安全地改用下一源。
+                try { console.warn('游戏索引加载失败，尝试备用源：', source, error); } catch (e) { /* ignore */ }
+                return tryNext();
+            });
+        }
+        return tryNext();
+    }
+
     function loadGames() {
         if (gamesState === 'loading' || gamesState === 'ready') return;
         gamesState = 'loading';
@@ -535,40 +617,30 @@
             return;
         }
 
-        fetch(BASE + config.gamesIndexUrl)
-            .then(function (r) {
-                if (!r.ok) throw new Error('http ' + r.status);
-                return r.json();
-            })
-            .then(function (data) {
-                if (!Array.isArray(data) || data.length === 0) throw new Error('empty catalogue');
-                GAMES = data.map(function (row) {
-                    var name = (row && row[1]) || '';
-                    return {
-                        id: (row && row[0]) || '',
-                        name: name,
-                        n: name.toLowerCase(),
-                        p: (row && row[2]) || '',
-                        i: (row && row[3]) || ''
-                    };
-                }).filter(function (game) {
-                    return game.id && game.name;
-                });
-                if (GAMES.length === 0) throw new Error('invalid catalogue');
-                if (input) input.placeholder = '在 ' + GAMES.length + ' 个游戏中搜索...';
-                if (heroCount) heroCount.textContent = GAMES.length;
+        // 缓存键只由内容哈希文件名决定，CDN 和本站回退源会共享同一份本地缓存。
+        var cacheKey = INDEX_CACHE_PREFIX + config.gamesIndexUrl;
+        var cached = readIndexCache(cacheKey);
+        if (cached) {
+            try {
+                applyIndexText(cached);
+                return;
+            } catch (e) {
+                // 缓存损坏（被篡改/写入不完整）→ 清掉并回落到网络
+                try { window.localStorage.removeItem(cacheKey); } catch (e2) { /* ignore */ }
+            }
+        }
 
-                sortedGames = null;
-                gamesState = 'ready';
-                hideGamesLoading();
-                if (pendingAction) {
-                    var action = pendingAction;
-                    pendingAction = null;
-                    action();
-                } else if (!applyUrlState() && !restoreViewState() && grid) {
-                    grid.innerHTML = '';
-                    hideSection();
-                }
+        var mirrors = Array.isArray(config.gamesIndexMirrors) ? config.gamesIndexMirrors : [];
+        var sources = mirrors.filter(function (url) { return typeof url === 'string' && url; });
+        // 相对地址确保始终请求当前 GitHub Pages 站点，而非 jsDelivr。
+        sources.push(BASE + config.gamesIndexUrl);
+        var timeoutMs = parseInt(config.gamesIndexTimeoutMs, 10) || 10000;
+
+        loadIndexFromSources(sources, timeoutMs)
+            .then(function (text) {
+                applyIndexText(text);
+                writeIndexCache(cacheKey, text);
+                pruneIndexCache(cacheKey);
             })
             .catch(function () {
                 gamesState = 'error';

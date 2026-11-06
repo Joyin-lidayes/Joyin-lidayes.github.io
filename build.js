@@ -182,8 +182,15 @@ function writeGamesIndex(games) {
     fs.mkdirSync(dataDir, { recursive: true });
     fs.writeFileSync(path.join(OUT, relativeUrl), content);
     fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
+    // GitHub Pages 保留本地索引作最终回退；主请求优先走 jsDelivr 的 cdn-data 分支。
+    // 工作流会在本次构建后将 _site/data 发布到该分支。内容哈希使 CDN 更新不会命中旧缓存。
+    const jsdelivrUrl = 'https://cdn.jsdelivr.net/gh/Joyin-lidayes/Joyin-lidayes.github.io@cdn-data/' + relativeUrl;
     fs.writeFileSync(path.join(OUT, 'js', 'site-config.js'),
-        '/* 本文件由 build.js 自动生成。 */\nwindow.SITE_CONFIG = { gamesIndexUrl: ' + JSON.stringify(relativeUrl) + ' };\n');
+        '/* 本文件由 build.js 自动生成。 */\nwindow.SITE_CONFIG = ' + JSON.stringify({
+            gamesIndexUrl: relativeUrl,
+            gamesIndexMirrors: [jsdelivrUrl],
+            gamesIndexTimeoutMs: 10000
+        }) + ';\n');
     return relativeUrl;
 }
 

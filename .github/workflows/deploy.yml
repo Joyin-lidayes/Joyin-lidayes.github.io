@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # 发布构建出的游戏索引到 cdn-data 分支，供 jsDelivr 读取。
+  contents: write
   pages: write
   id-token: write
 
@@ -34,6 +35,21 @@ jobs:
         env:
           UMAMI_WEBSITE_ID: ${{ secrets.UMAMI_WEBSITE_ID }}
         run: node build.js
+      # jsDelivr 只能分发 Git 仓库中可见的文件，GitHub Pages 的上传产物不能直接镜像。
+      # 此分支只保存带内容哈希的首页索引；新构建会替换旧文件，避免仓库持续膨胀。
+      - name: Prepare games index for jsDelivr
+        run: |
+          mkdir -p .cdn-data/data
+          cp _site/data/* .cdn-data/data/
+      - name: Publish games index for jsDelivr
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: cdn-data
+          publish_dir: ./.cdn-data
+          keep_files: false
+          enable_jekyll: false
+          commit_message: "chore: publish games index for jsDelivr"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

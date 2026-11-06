@@ -51,6 +51,15 @@ node scripts/new-game.js "游戏名称" "下载链接"
 - 修改数据后运行 `node build.js`（首次需先 `npm install` 安装构建依赖）。构建会校验源数据，并生成：首页使用的 `data/games-index.<hash>.json` 轻量索引（含拼音搜索字段）、`js/site-config.js` 配置和 `_site/g/` 下的单游戏静态详情/分享页。
 - 完整 `games.json`、备份、构建脚本和维护脚本仅作为项目源文件，不会被复制到 `_site` 发布产物。
 
+### jsDelivr 游戏索引镜像
+
+首页游戏索引较大，构建后的 `data/games-index.<hash>.json` 会在发布 GitHub Pages 时同步到仓库的 `cdn-data` 分支。首页优先请求 jsDelivr，单个源请求超过 10 秒、网络错误或返回非 2xx 时，自动回退到本站 GitHub Pages 文件；两者共用同一条本地缓存。
+
+- jsDelivr 地址格式：`https://cdn.jsdelivr.net/gh/Joyin-lidayes/Joyin-lidayes.github.io@cdn-data/data/games-index.<hash>.json`。
+- `cdn-data` 是自动生成分支，请不要手工修改或将其合并进 `main`。
+- 工作流使用 `GITHUB_TOKEN` 写入该分支。因此 GitHub 仓库 **Settings → Actions → General → Workflow permissions** 必须选择 **Read and write permissions**；若组织策略禁止 `GITHUB_TOKEN` 写入，则创建具备仓库 Contents 读写权限的 fine-grained PAT，保存为 Actions secret `CDN_DATA_TOKEN`，并把工作流中的 `github_token` 改为该 secret。
+- jsDelivr 的刷新不能替代正式的中国大陆 CDN：若它在某些地区不可用，页面会自动走 GitHub Pages 回退。需要稳定大陆加速时，再将国内对象存储 CDN 放到 `gamesIndexMirrors` 数组第一项即可。
+
 ## 搜索
 
 首页搜索支持：大小写不敏感、空格分词多关键词、中文/拼音全拼/拼音首字母子串匹配，并按相关性排序。拼音由构建脚本用 [pinyin-pro](https://www.npmjs.com/package/pinyin-pro) 在**构建期**预计算写入首页轻量索引，浏览器端不引入拼音库。
