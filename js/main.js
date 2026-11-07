@@ -47,6 +47,36 @@
     var VISITED_GAMES_KEY = 'visitedGameIds';
     var INDEX_CACHE_PREFIX = 'gamesIndex:';
     var visitedGameIds = getVisitedGameIds();
+    var PAGE_SIZE_KEY = 'jarSite:pageSize';
+    var ANNOUNCEMENT_KEY = 'firstEnterPage';
+    var restoringState = false;
+    var restoreTimer = null;
+    var scrollSaveTimer = null;
+    var donationReady = false;
+    var finishScrollRestore = null;
+
+    function readPreference(key) {
+        try { return window.localStorage.getItem(key); } catch (e) { return null; }
+    }
+
+    function writePreference(key, value) {
+        try { window.localStorage.setItem(key, value); } catch (e) { /* optional preference */ }
+    }
+
+    function snapshotViewState() {
+        return {
+            view: viewState, page: currentPage, pageSize: pageSize,
+            scrollY: Math.max(0, window.scrollY || window.pageYOffset || 0)
+        };
+    }
+
+    function replaceHistoryState(state) {
+        try {
+            var entry = Object.assign({}, history.state || {});
+            entry.jarGameList = state;
+            history.replaceState(entry, '', window.location.href);
+        } catch (e) { /* history may be unavailable */ }
+    }
 
     // 统计事件：Umami 未加载（被广告拦截器挡掉或加载失败）时静默跳过，绝不影响页面功能。
     function track(name, data) {
@@ -55,16 +85,26 @@
         } catch (e) { /* ignore */ }
     }
 
+    function cancelScrollRestore() {
+        if (restoreTimer !== null) window.clearTimeout(restoreTimer);
+        restoreTimer = null;
+        finishScrollRestore = null;
+        restoringState = false;
+    }
+
+    function beginNavigation() {
+        // 目标尚未恢复时保留它原有的历史快照，不用未完成布局下的位置覆盖。
+        if (restoringState) cancelScrollRestore();
+        else saveViewState();
+    }
+
     function saveViewState() {
-        if (!viewState || !window.store) return;
-        var state = {
-            view: viewState,
-            page: currentPage,
-            pageSize: pageSize,
-            // 点击详情页前保存当前位置；返回或刷新后恢复到用户离开的位置。
-            scrollY: Math.max(0, window.scrollY || window.pageYOffset || 0)
-        };
-        try { window.store.set(VIEW_STATE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+        if (restoringState || gamesState !== 'ready') return;
+        var state = snapshotViewState();
+        if (window.store) {
+            try { window.store.set(VIEW_STATE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+        }
+        replaceHistoryState(state);
     }
 
     // 已访问标记只在当前标签页会话内有效，不写 Cookie/localStorage。
@@ -119,7 +159,8 @@
             query: query,
             page: Math.max(1, parseInt(params.get('page'), 10) || 1),
             pageSize: requestedSize === null ? null : normalizePageSize(requestedSize),
-            hasView: !!seed || !!query
+            all: params.get('view') === 'all',
+            hasView: !!seed || !!query || params.get('view') === 'all'
         };
     }
 
@@ -129,17 +170,24 @@
         url.searchParams.delete('r');
         url.searchParams.delete('page');
         url.searchParams.delete('size');
+        url.searchParams.delete('view');
         if (viewState && viewState.type === 'search') {
             url.searchParams.set('q', viewState.query);
         } else if (viewState && viewState.type === 'random') {
             url.searchParams.set('r', viewState.seed);
-        } else {
-            history[mode || 'pushState'](null, '', url.pathname + url.search + url.hash);
-            return;
+        } else if (viewState && viewState.type === 'all') {
+            url.searchParams.set('view', 'all');
         }
-        url.searchParams.set('page', currentPage);
-        url.searchParams.set('size', pageSize);
-        history[mode || 'pushState'](null, '', url.pathname + url.search + url.hash);
+        if (viewState) {
+            url.searchParams.set('page', currentPage);
+            url.searchParams.set('size', pageSize);
+        }
+        try {
+            var entry = Object.assign({}, history.state || {});
+            entry.jarGameList = snapshotViewState();
+            history[mode || 'pushState'](entry, '', url.pathname + url.search + url.hash);
+        } catch (e) { /* URL persistence is optional */ }
+        saveViewState();
     }
 
     function createSeededRandom(seed) {
@@ -328,11 +376,11 @@
             if (pageInput) pageInput.value = currentPage;
             return;
         }
+        beginNavigation();
         currentPage = p;
         renderPage();
-        saveViewState();
-        syncUrl('pushState');
         scrollToGames();
+        syncUrl('pushState');
     }
 
     function setList(arr, title, state) {
@@ -349,13 +397,11 @@
             if (pagerEl) pagerEl.style.display = 'none';
             if (footEl) footEl.style.display = 'none';
             showSection();
-            saveViewState();
             return;
         }
 
         renderPage();
         showSection();
-        saveViewState();
     }
 
     /* ---------- 交互动作 ---------- */
@@ -369,6 +415,7 @@
 
     function runSearch(kw, state) {
         if (waitForGames(function () { runSearch(kw, state); })) return;
+        if (state && state.syncUrl) beginNavigation();
         var arr = searchGames(kw, getSortedGames());
         setList(arr, '搜索「' + kw + '」的结果', {
             view: { type: 'search', query: kw },
@@ -393,6 +440,7 @@
 
     function showAll(state) {
         if (waitForGames(function () { showAll(state); })) return;
+        if (!state || !state.fromUrl) beginNavigation();
         setList(getSortedGames(), '全部游戏', {
             view: { type: 'all' },
             page: state && state.page
@@ -402,6 +450,7 @@
 
     function showRandom(state) {
         if (waitForGames(function () { showRandom(state); })) return;
+        if (!state || !state.fromUrl) beginNavigation();
         var n = 20;
         var arr = [];
         var seed = normalizeSeed(state && state.view && state.view.seed) || createRandomSeed();
@@ -418,52 +467,105 @@
     }
 
     function restoreScrollPosition(state) {
-        var y = state && parseInt(state.scrollY, 10);
-        if (!y) return;
-        // 等待列表渲染和浏览器 hash 定位结束后，再精确回到离开前的位置。
-        window.setTimeout(function () { window.scrollTo(0, y); }, 0);
+        if (restoreTimer !== null) window.clearTimeout(restoreTimer);
+        restoringState = true;
+        var y = Math.max(0, parseInt(state && state.scrollY, 10) || 0);
+        // 等列表与 hash 布局完成；恢复期间不让 scroll/pagehide 覆盖已保存的位置。
+        function finish() {
+            window.scrollTo(0, y);
+            restoreTimer = null;
+            finishScrollRestore = null;
+            restoringState = false;
+            saveViewState();
+        }
+        finishScrollRestore = function () {
+            restoreTimer = window.setTimeout(finish, 0);
+        };
+        if (donationReady) finishScrollRestore();
     }
 
-    function applyUrlState() {
-        var state = getUrlState();
-        if (!state.hasView) return false;
-        if (state.pageSize) {
-            pageSize = state.pageSize;
-            if (pageSizeSel) pageSizeSel.value = pageSize;
+    function resetListView() {
+        currentList = [];
+        viewState = null;
+        currentPage = 1;
+        if (input) input.value = '';
+        if (grid) grid.innerHTML = '';
+        if (titleEl) titleEl.textContent = '游戏列表';
+        updateMeta();
+        if (pagerEl) pagerEl.style.display = 'none';
+        hideSection();
+    }
+
+    function renderSavedView(state) {
+        if (!state || !state.view) return false;
+        pageSize = normalizePageSize(state.pageSize || pageSize);
+        if (pageSizeSel) pageSizeSel.value = pageSize;
+        var replay = { page: state.page, view: state.view, fromUrl: true };
+        if (state.view.type === 'search' && state.view.query) {
+            if (input) input.value = state.view.query;
+            runSearch(state.view.query, replay);
+        } else if (state.view.type === 'random' && normalizeSeed(state.view.seed)) {
+            showRandom(replay);
+        } else if (state.view.type === 'all') {
+            if (input) input.value = '';
+            showAll(replay);
+        } else {
+            return false;
         }
-        if (state.seed) {
-            showRandom({ view: { seed: state.seed }, page: state.page, fromUrl: true });
-            return true;
-        }
-        if (input) input.value = state.query;
-        runSearch(state.query, { page: state.page });
         return true;
     }
 
-    function restoreViewState() {
-        var state = getSavedViewState();
-        if (!state || !state.view) return false;
-        if (pageSizeSel && state.pageSize) {
-            pageSize = normalizePageSize(state.pageSize);
-            pageSizeSel.value = pageSize;
+    function matchesView(a, b) {
+        return !!(a && b && a.view && b.view &&
+            a.view.type === b.view.type && a.view.query === b.view.query &&
+            a.view.seed === b.view.seed && a.page === b.page && a.pageSize === b.pageSize);
+    }
+
+    function applyUrlState(saved) {
+        var url = getUrlState();
+        if (!url.hasView) return false;
+        var state = {
+            view: url.seed ? { type: 'random', seed: url.seed } :
+                url.query ? { type: 'search', query: url.query } : { type: 'all' },
+            page: url.page,
+            pageSize: url.pageSize || pageSize
+        };
+        renderSavedView(state);
+        state.page = currentPage; // 按实际有效页码匹配，并规范化越界 URL。
+        var target = matchesView(state, saved) ? saved : Object.assign({}, state, { scrollY: 0 });
+        restoringState = true;
+        syncUrl('replaceState');
+        replaceHistoryState(target);
+        // 仅同一视图/页码/条数才复用旧位置，分享链接不会误用另一个搜索的滚动值。
+        restoreScrollPosition(target);
+        return true;
+    }
+
+    function restoreInitialView() {
+        var entry = history.state && history.state.jarGameList;
+        var saved = entry || getSavedViewState();
+        if (applyUrlState(saved)) return;
+        if (entry && !entry.view) {
+            resetListView();
+            restoreScrollPosition(entry);
+        } else if (renderSavedView(saved)) {
+            // 恢复会话不是一次新的导航，不能 pushState。
+            restoringState = true;
+            syncUrl('replaceState');
+            replaceHistoryState(saved);
+            restoreScrollPosition(saved);
+        } else {
+            resetListView();
+            saveViewState();
         }
-        if (state.view.type === 'search' && state.view.query) {
-            if (input) input.value = state.view.query;
-            runSearch(state.view.query, state);
-            restoreScrollPosition(state);
-            return true;
+    }
+
+    function restoreHistoryView() {
+        var entry = history.state && history.state.jarGameList;
+        if (!applyUrlState(entry)) {
+            resetListView();
+            restoreScrollPosition(entry);
         }
-        if (state.view.type === 'random' && state.view.seed) {
-            showRandom(state);
-            restoreScrollPosition(state);
-            return true;
-        }
-        if (state.view.type === 'all') {
-            showAll(state);
-            restoreScrollPosition(state);
-            return true;
-        }
-        return false;
     }
 
     /* ---------- 复制 ---------- */
@@ -498,7 +600,10 @@
     /* ---------- 捐赠名单（donation.json） ---------- */
     function loadDonation() {
         var list = document.getElementById('donorList');
-        if (!list) return;
+        if (!list) {
+            donationReady = true;
+            return;
+        }
 
         fetch(BASE + 'donation.json', { cache: 'no-store' })
             .then(function (r) { return r.json(); })
@@ -518,6 +623,9 @@
             })
             .catch(function () {
                 list.innerHTML = '<li class="empty">捐赠名单加载失败</li>';
+            }).then(function () {
+                donationReady = true;
+                if (finishScrollRestore) finishScrollRestore();
             });
     }
 
@@ -527,7 +635,16 @@
         try { return window.localStorage.getItem(key); } catch (e) { return null; }
     }
     function writeIndexCache(key, value) {
-        try { window.localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+        try {
+            window.localStorage.setItem(key, value);
+        } catch (e) {
+            // 只有配额不足才清旧索引腾空间；禁用存储等异常不应触发删除。
+            if (!e || (e.name !== 'QuotaExceededError' && e.name !== 'NS_ERROR_DOM_QUOTA_REACHED')) return false;
+            pruneIndexCache(key);
+            try { window.localStorage.setItem(key, value); } catch (retryError) { return false; }
+        }
+        pruneIndexCache(key);
+        return true;
     }
     function pruneIndexCache(keepKey) {
         try {
@@ -566,9 +683,8 @@
             var action = pendingAction;
             pendingAction = null;
             action();
-        } else if (!applyUrlState() && !restoreViewState() && grid) {
-            grid.innerHTML = '';
-            hideSection();
+        } else {
+            restoreInitialView();
         }
     }
 
@@ -655,6 +771,7 @@
         if (cached) {
             try {
                 applyIndexText(cached);
+                pruneIndexCache(cacheKey);
                 return;
             } catch (e) {
                 // 缓存损坏（被篡改/写入不完整）→ 清掉并回落到网络
@@ -672,7 +789,6 @@
             .then(function (result) {
                 applyIndexText(result.text);
                 writeIndexCache(cacheKey, result.text);
-                pruneIndexCache(cacheKey);
             })
             .catch(function () {
                 gamesState = 'error';
@@ -699,9 +815,35 @@
         });
 
         window.addEventListener('popstate', function () {
-            if (gamesState === 'ready') {
-                if (!applyUrlState() && grid) grid.innerHTML = '';
+            // 不能在此保存旧 UI：浏览器此时已经切到了目标历史项。
+            if (scrollSaveTimer !== null) window.clearTimeout(scrollSaveTimer);
+            if (gamesState === 'ready') restoreHistoryView();
+            else pendingAction = restoreHistoryView;
+        });
+        function cancelRestoreOnInteraction(event) {
+            if (event.type === 'keydown' && ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].indexOf(event.key) < 0) return;
+            if (restoringState) {
+                cancelScrollRestore();
+                saveViewState();
             }
+        }
+        window.addEventListener('wheel', cancelRestoreOnInteraction, { passive: true });
+        window.addEventListener('touchstart', cancelRestoreOnInteraction, { passive: true });
+        window.addEventListener('keydown', cancelRestoreOnInteraction);
+        window.addEventListener('scroll', function () {
+            if (restoringState || gamesState !== 'ready') return;
+            if (scrollSaveTimer !== null) window.clearTimeout(scrollSaveTimer);
+            scrollSaveTimer = window.setTimeout(function () {
+                scrollSaveTimer = null;
+                saveViewState();
+            }, 150);
+        });
+        window.addEventListener('pagehide', function () { saveViewState(); });
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') saveViewState();
+        });
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) saveViewState();
         });
 
         // 分页
@@ -717,13 +859,14 @@
         }
         if (pageSizeSel) {
             pageSizeSel.addEventListener('change', function () {
+                beginNavigation();
                 var firstIndex = (currentPage - 1) * pageSize;
                 pageSize = normalizePageSize(pageSizeSel.value);
+                writePreference(PAGE_SIZE_KEY, String(pageSize));
                 currentPage = Math.floor(firstIndex / pageSize) + 1;
                 renderPage();
-                saveViewState();
-                syncUrl('pushState');
                 scrollToGames();
+                syncUrl('pushState');
             });
         }
 
@@ -733,12 +876,15 @@
             qq.addEventListener('click', function () { copy('580458820'); });
         }
 
-        // 公告弹窗：首次访问展示一次
+        // 公告只在当前标签页会话内记住关闭状态，刷新不重复展示。
+        // 清除上版长期确认数据，不读取或迁移它。
+        try { window.localStorage.removeItem('jarSite:announcement'); } catch (e) { /* optional cleanup */ }
+        if (window.store.remove) window.store.remove('jarSite:announcement');
         var gg = document.getElementById('gg');
         if (gg) {
-            if (!window.store.get('firstEnterPage')) gg.classList.add('open');
+            if (!window.store.get(ANNOUNCEMENT_KEY)) gg.classList.add('open');
             var closeAnnouncement = function () {
-                window.store.set('firstEnterPage', 'ok');
+                window.store.set(ANNOUNCEMENT_KEY, 'ok');
                 gg.classList.remove('open');
             };
             var closegg = gg.querySelector('.closegg');
@@ -771,6 +917,9 @@
 
     /* ---------- 初始化 ---------- */
     function init() {
+        pageSize = normalizePageSize(readPreference(PAGE_SIZE_KEY));
+        if (pageSizeSel) pageSizeSel.value = pageSize;
+        try { history.scrollRestoration = 'manual'; } catch (e) { /* optional */ }
         bind();
         loadDonation();
         loadGames();

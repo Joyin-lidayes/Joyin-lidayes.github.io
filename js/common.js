@@ -3,7 +3,7 @@
    - 站点根路径（供 fetch 使用）
    - 移动端导航开关
    - 轻量 Toast 提示
-   - session 存取（sessionStorage + Cookie 兜底）
+   - 标签页会话存取（sessionStorage，异常时本页内存兜底）
    - 更新历史：点击 logo 图标弹出，内容来自 history.json
    ========================================================= */
 (function () {
@@ -87,31 +87,50 @@
         }, 2000);
     };
 
-    /* ---------- session 存取（带 Cookie 兜底） ---------- */
-    var setCookie = function (k, v) {
+    /* ---------- 标签页会话存取（异常时本页内存兜底） ---------- */
+    // 仅清理旧版本站 path=/ Cookie；不读取或迁移，避免跨标签页污染。
+    // 不清空 sessionStorage，保留当前标签页已有的会话状态。
+    ['gameListView', 'firstEnterPage'].forEach(function (key) {
         try {
-            document.cookie = k + '=' + encodeURIComponent(v) + '; path=/';
-        } catch (e) { /* ignore */ }
-    };
+            document.cookie = key + '=; Max-Age=0; path=/';
+        } catch (e) { /* Cookie 被禁用时不影响页面 */ }
+    });
 
-    var getCookie = function (k) {
-        var m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)'));
-        return m ? decodeURIComponent(m[1]) : null;
-    };
+    var sessionMemory = Object.create(null);
+    var sessionStorageAvailable = true;
 
+    // 一旦存储抛错，本页后续操作统一使用内存，避免读回旧值或删除后复活。
     window.store = {
         get: function (k) {
-            try {
-                var v = window.sessionStorage.getItem(k);
-                if (v !== null) return v;
-            } catch (e) { /* ignore */ }
-            return getCookie(k);
+            k = String(k);
+            if (sessionStorageAvailable) {
+                try {
+                    var v = window.sessionStorage.getItem(k);
+                    if (v === null) delete sessionMemory[k];
+                    else sessionMemory[k] = v;
+                    return v;
+                } catch (e) { sessionStorageAvailable = false; }
+            }
+            return Object.prototype.hasOwnProperty.call(sessionMemory, k) ? sessionMemory[k] : null;
         },
         set: function (k, v) {
-            try {
-                window.sessionStorage.setItem(k, v);
-            } catch (e) { /* ignore */ }
-            setCookie(k, v);
+            k = String(k);
+            v = String(v);
+            sessionMemory[k] = v;
+            if (sessionStorageAvailable) {
+                try {
+                    window.sessionStorage.setItem(k, v);
+                } catch (e) { sessionStorageAvailable = false; }
+            }
+        },
+        remove: function (k) {
+            k = String(k);
+            delete sessionMemory[k];
+            if (sessionStorageAvailable) {
+                try {
+                    window.sessionStorage.removeItem(k);
+                } catch (e) { sessionStorageAvailable = false; }
+            }
         }
     };
 
