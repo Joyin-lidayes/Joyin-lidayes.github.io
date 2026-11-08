@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e6e8eb">
+    <title>在线试玩 | jar游戏小站</title>
+</head>
+<style>
+    html, body {
+        height: 100%;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+            "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+        background-color: #e6e8eb;
+        color: #23272d;
+    }
+    #screen-area {
+        background-color: #e6e8eb;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #display {
+        background-color: #ffffff;
+        zoom: 1;
+        image-rendering: pixelated; /* affects zoom */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    #display:focus {
+        outline: none;
+    }
+    #loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-align: center;
+        color: #5f6770;
+    }
+    #loading[hidden] { display: none; }
+    #loading .em-loading-spinner {
+        width: 26px;
+        height: 26px;
+        border: 3px solid #c3c7cf;
+        border-top-color: #005293;
+        border-radius: 50%;
+        animation: em-spin 0.75s linear infinite;
+    }
+    #loading .em-loading-text {
+        color: #23272d;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    #loading .em-loading-bar {
+        width: 260px;
+        max-width: 70vw;
+        height: 6px;
+        background: #eef1f5;
+        border: 1px solid #c3c7cf;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    #loading .em-loading-bar-fill {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: #005293;
+        border-radius: 999px;
+        transition: width 0.12s linear;
+    }
+    #loading .em-loading-pct {
+        font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+        color: #005293;
+        font-size: 13px;
+        font-weight: 700;
+    }
+    #loading .em-loading-hint {
+        color: #939aa3;
+        font-size: 12px;
+        max-width: 360px;
+        line-height: 1.6;
+    }
+    @keyframes em-spin { to { transform: rotate(360deg); } }
+    @keyframes em-indeterminate {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(250%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        #loading .em-loading-spinner,
+        #loading .em-loading-bar-fill { animation: none; }
+    }
+
+    .back-link {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 50;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid #c3c7cf;
+        border-radius: 4px;
+        color: #005293;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .back-link:hover {
+        background: #ffffff;
+    }
+
+    .keypad-part {
+        background-color: #d8dbe0; /* 与站点标题栏底色一致 */
+        padding: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        border-color: #c3c7cf;
+        -webkit-tap-highlight-color: transparent;
+    }
+    #left-keys { border-right: 1px solid #c3c7cf; }
+    #right-keys { border-left: 1px solid #c3c7cf; }
+
+    .key-grid {
+        display: grid;
+        gap: 6px;
+        width: 100%;
+        height: 100%;
+    }
+
+    .left-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+    }
+
+    .right-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+
+    .key {
+        background-color: #ffffff;
+        color: #23272d;
+        border: 1px solid #c3c7cf;
+        border-radius: 4px;
+        font-size: 1.5em;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        user-select: none;
+        transition: background-color 0.1s ease, transform 0.05s ease;
+        line-height: 1.1;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+    .key span {
+        font-size: 0.4em;
+        font-weight: normal;
+        margin-top: 2px;
+        color: #939aa3;
+    }
+
+    .key.active {
+        background-color: #e6e8eb;
+        transform: scale(0.95);
+    }
+
+    .arrow-key {
+        font-size: 2em;
+    }
+
+    .ok-key {
+        font-size: 1.3em;
+        color: #005293;
+    }
+
+    .small-key {
+        width: 70%;
+        height: 70%;
+        font-size: 0.9em;
+        align-self: end;
+        padding: 2px;
+        line-height: 1;
+    }
+
+    .small-key-left {
+        justify-self: left;
+    }
+
+    .small-key-right {
+        justify-self: right;
+    }
+
+    #left-keys,
+    #right-keys {
+        display: none;
+        position: absolute;
+        bottom: 0;
+    }
+
+    #left-keys {
+        left: 0;
+    }
+
+    #right-keys {
+        right: 0;
+    }
+
+    #screen-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    body.kbd-portrait #left-keys,
+    body.kbd-portrait #right-keys,
+    body.kbd-landscape #left-keys,
+    body.kbd-landscape #right-keys {
+        display: flex;
+    }
+
+    body.kbd-portrait #left-keys,
+    body.kbd-portrait #right-keys {
+        width: 50%;
+        height: 220px;
+    }
+
+    body.kbd-landscape #left-keys,
+    body.kbd-landscape #right-keys {
+        width: 220px;
+        height: 100%;
+    }
+
+    body.kbd-landscape #left-keys .key-grid,
+    body.kbd-landscape #right-keys .key-grid {
+        max-height: 400px;
+    }
+
+    body.kbd-portrait #screen-area {
+        bottom: 220px;
+    }
+
+    body.kbd-landscape #screen-area {
+        left: 220px;
+        right: 220px;
+    }
+</style>
+<body>
+    <a class="back-link" href="./index.html" id="backLink">← 返回在线试玩</a>
+    <script>
+        (function () {
+            var back = document.getElementById('backLink');
+            if (!back) return;
+            back.addEventListener('click', function (e) {
+                if (new URLSearchParams(location.search).get('mobile')) return; // 移动端同页，默认跳回
+                e.preventDefault();
+                window.close(); // 桌面端由启动页脚本开窗，可直接关闭
+                setTimeout(function () { location.href = './index.html'; }, 300); // 关闭被拦截时兜底
+            });
+        })();
+    </script>
+    <div id="screen-area">
+        <canvas tabindex="0" id="display" style="display: none;"></canvas>
+        <div id="loading">
+            <div class="em-loading-spinner" aria-hidden="true"></div>
+            <div class="em-loading-text" id="loadingText">正在初始化模拟器…</div>
+            <div class="em-loading-bar" aria-hidden="true"><span class="em-loading-bar-fill" id="loadingBarFill"></span></div>
+            <div class="em-loading-pct" id="loadingPct">0%</div>
+            <div class="em-loading-hint" id="loadingHint">首次加载需要下载模拟器核心，请耐心等待；之后会快很多</div>
+        </div>
+    </div>
+    <div id="left-keys" class="keypad-part">
+        <div class="key-grid left-grid">
+            <button data-key="Digit1" class="key">1</button>
+            <button data-key="Digit2" class="key">2 <span>ABC</span></button>
+            <button data-key="Digit3" class="key">3 <span>DEF</span></button>
+            <button data-key="Digit4" class="key">4 <span>GHI</span></button>
+            <button data-key="Digit5" class="key">5 <span>JKL</span></button>
+            <button data-key="Digit6" class="key">6 <span>MNO</span></button>
+            <button data-key="Digit7" class="key">7 <span>PQRS</span></button>
+            <button data-key="Digit8" class="key">8 <span>TUV</span></button>
+            <button data-key="Digit9" class="key">9 <span>WXYZ</span></button>
+            <button data-key="NumpadAsterisk" class="key">*</button>
+            <button data-key="Digit0" class="key">0 <span>+</span></button>
+            <button data-key="NumpadDivide" class="key">#</button>
+        </div>
+    </div>
+    <div id="right-keys" class="keypad-part">
+        <div class="key-grid right-grid">
+            <button data-key="F1" class="key">L</button>
+            <button data-key="ArrowUp" class="key arrow-key" aria-label="Up">↑</button>
+            <button data-key="F2" class="key">R</button>
+            <button data-key="ArrowLeft" class="key arrow-key" aria-label="Left">←</button>
+            <button data-key="Enter" class="key ok-key">OK</button>
+            <button data-key="ArrowRight" class="key arrow-key" aria-label="Right">→</button>
+            <button data-key="Escape" class="key small-key small-key-left">Esc</button>
+            <button data-key="ArrowDown" class="key arrow-key" aria-label="Down">↓</button>
+            <button data-key="Maximize" class="key small-key small-key-right" aria-label="Maximize">⛶</button>
+        </div>
+    </div>
+    <script src="cj/loader.js"></script>
+    <script type="module" src="src/main.js"></script>
+    <script>
+        // 注册 Service Worker：缓存完整 jar，二次访问时 Range 分片走本地缓存
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(function () {});
+        }
+    </script>
+</body>
+</html>

@@ -129,6 +129,35 @@ function copyDir(relativePath) {
     fs.cpSync(from, path.join(OUT, relativePath), { recursive: true });
 }
 
+// 在线试玩（freej2me-web 模拟器）运行所需文件白名单。
+// 只复制运行时资源，排除 fluidsynth/ffmpeg 构建源码、19MB 的 gm.h 与测试资源。
+const EMULATOR_PAGES = ['index.html', 'run.html'];
+const EMULATOR_FILES = [
+    'emulator.css', 'recommended.json', 'freej2me-web.jar', 'init.zip', 'sw.js',
+    'src/launcher.js', 'src/main.js', 'src/key.js', 'src/eventqueue.js', 'src/screenKbd.js',
+    'libjs/libcanvasfont.js', 'libjs/libcanvasgraphics.js', 'libjs/libgles2.js',
+    'libjs/libjsreference.js', 'libjs/libmediabridge.js', 'libjs/libmidibridge.js',
+    'libmedia/libmedia.js', 'libmedia/transcode/transcode.js',
+    'libmedia/transcode/transcode.wasm', 'libmedia/transcode/worker.js',
+    'libmidi/libmidi.js', 'libmidi/libmidi.wasm', 'libmidi/worklet.js'
+];
+
+function copyEmulator() {
+    EMULATOR_PAGES.forEach(function (name) {
+        copyPage(path.join('emulator', name));
+    });
+    EMULATOR_FILES.forEach(function (name) {
+        copyFile(path.join('emulator', name));
+    });
+    // 自托管 CheerpJ 运行时（emulator/cj/）：需先运行 scripts/download-cheerpj.js 下载
+    const cjDir = path.join(ROOT, 'emulator', 'cj');
+    if (fs.existsSync(cjDir)) {
+        copyDir(path.join('emulator', 'cj'));
+    } else {
+        console.warn('警告：缺少 emulator/cj/（CheerpJ 运行时未自托管），请先运行 node scripts/download-cheerpj.js');
+    }
+}
+
 function copySite() {
     fs.rmSync(OUT, { recursive: true, force: true });
     fs.mkdirSync(OUT, { recursive: true });
@@ -261,6 +290,7 @@ function main() {
     const games = readGames();
     const gameIconIds = readGameIconIds();
     copySite();
+    copyEmulator();
     const indexUrl = writeGamesIndex(games);
     generateDetailPages(games, gameIconIds);
     console.log('built _site OK: ' + games.length + ' detail pages, homepage index ' + indexUrl +

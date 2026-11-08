@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e6e8eb">
+    <title>在线试玩 | Joyin的塞班Java怀旧游戏小站</title>
+    <meta name="description" content="Joyin的 jar 游戏在线试玩：上传 jar 文件，在浏览器里直接运行 J2ME 塞班怀旧游戏，无需安装任何 App，游戏存档保存在本地浏览器。">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="jar游戏小站">
+    <meta property="og:title" content="在线试玩 | Joyin的塞班Java怀旧游戏小站">
+    <meta property="og:description" content="上传 jar 文件，在浏览器里直接运行 J2ME 塞班怀旧游戏。">
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="emulator.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container nav">
+            <a class="brand" href="../index.html">
+                <span class="logo">J</span>
+                <span>jar游戏小站</span>
+            </a>
+            <button class="nav-toggle" aria-label="打开菜单" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links">
+                <a href="../index.html">首页</a>
+                <a href="../html/friend.html">友链</a>
+                <a href="../html/QandA.html">Q&amp;A</a>
+                <a href="../html/donation.html">捐赠</a>
+                <a href="./index.html" class="active">在线试玩</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container em-page">
+        <!-- 标题与使用步骤 -->
+        <section class="em-hero">
+            <p class="tag">J2ME · 浏览器模拟器 · 无需安装</p>
+            <h1>在线<span class="glow">试玩</span></h1>
+            <p class="lead">把 jar 游戏放进浏览器里直接玩，存档只保存在你自己的浏览器。</p>
+            <ol class="steps">
+                <li><strong>下载游戏</strong>：在首页搜索并进入游戏详情页，点「立即下载」拿到压缩包。</li>
+                <li><strong>解压出 jar</strong>：若是 <code>.zip</code> / <code>.rar</code> / <code>.7z</code> 压缩包，先解压，取出里面的 <code>.jar</code> 文件（有 <code>.jad</code> 就一并保留）。</li>
+                <li><strong>上传试玩</strong>：在下方「添加游戏」里选择 <code>.jar</code> 上传；如提示需要描述文件，再补传 <code>.jad</code>。</li>
+                <li><strong>开始游戏</strong>：上传完成后，在「我的游戏」里点该游戏即可运行。</li>
+                <li>由于模拟器核心由国外其它开源项目提供，首次加载可能需要较长时间，请耐心等待。</li>
+            </ol>
+        </section>
+
+        <div id="loading">
+            <div class="em-loading-spinner" aria-hidden="true"></div>
+            <div class="em-loading-text" id="loadingText">正在初始化模拟器…</div>
+            <div class="em-loading-bar" aria-hidden="true"><span class="em-loading-bar-fill" id="loadingBarFill"></span></div>
+            <div class="em-loading-pct" id="loadingPct">0%</div>
+            <div class="em-loading-hint" id="loadingHint">首次加载需要下载模拟器核心，请耐心等待；</div>
+        </div>
+
+        <div id="busy-overlay" style="display: none">
+            <div class="em-loading-spinner" aria-hidden="true"></div>
+            <div class="em-loading-text" id="busyText">正在处理…</div>
+        </div>
+
+        <div id="main" style="display: none">
+            <!-- 我的游戏 -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>我的游戏</h2>
+                    <span class="muted">已上传到当前浏览器的游戏</span>
+                </div>
+                <div class="data-controls">
+                    <button class="btn" id="import-data-btn">导入数据</button>
+                    <input type="file" id="import-data-file" style="display: none" accept=".zip" />
+                    <button class="btn" id="export-data-btn">导出数据</button>
+                    <button class="btn" id="reset-data-btn">清空所有游戏</button>
+                    <a id="export-data-link" style="display: none" download="freej2me-data.zip">x</a>
+                </div>
+                <div id="game-list" class="game-list"></div>
+            </section>
+
+            <!-- 添加游戏 -->
+            <section class="section">
+                <div class="section-head add-edit-header">
+                    <h2 id="add-edit-text">添加游戏</h2>
+                    <button id="clear-current" class="btn">清空</button>
+                </div>
+
+                <div id="file-input-step">
+                    <div class="form-group">
+                        <label for="game-file-input">选择 JAR 文件</label>
+                        <input type="file" id="game-file-input" accept=".jar" />
+                    </div>
+                </div>
+
+                <div id="file-input-jad-step" style="display: none">
+                    <div id="warning-message" class="warning-message">
+                        <span>⚠️</span>
+                        <span>该游戏需要 JAD 描述文件才能正常运行，请上传一个。</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="upload-descriptor-file-input">选择 JAD 文件</label>
+                        <input type="file" id="upload-descriptor-file-input" accept=".jad" />
+                    </div>
+                    <div class="form-group">
+                        <button id="continue-without-jad" class="btn btn-block">不传 JAD 直接继续（可能无法运行）</button>
+                    </div>
+                </div>
+
+                <div class="loading" id="file-input-loading" style="display: none">
+                    <div class="spinner"></div>
+                    <span>正在分析文件…</span>
+                </div>
+
+                <div id="add-manage-step" style="display: none">
+                    <div id="preview" class="preview-container">
+                        <img class="preview-icon" alt="游戏图标" />
+                        <span class="preview-name">游戏名称</span>
+                        <div id="preview-controls" class="manage-controls">
+                            <button id="wipe-data-btn" class="control-button warning-button" title="清空游戏存档">清空存档</button>
+                            <button id="uninstall-btn" class="control-button danger-button" title="卸载游戏">卸载</button>
+                        </div>
+                    </div>
+
+                    <div id="edit-settings-container" class="settings-container">
+                        <div class="aux-file-upload">
+                            <div class="aux-file-upload-btn">上传可选 JAD 描述文件</div>
+                            <input type="file" id="aux-jad-file-input" accept=".jad" />
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="phoneType">机型：</label>
+                                <select id="phoneType">
+                                    <option value="Standard">标准</option>
+                                    <option value="Nokia">诺基亚</option>
+                                    <option value="Motorola">摩托罗拉</option>
+                                    <option value="Siemens">西门子</option>
+                                    <option value="SonyEricsson">索尼爱立信</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="screenSize">屏幕尺寸：</label>
+                                <select id="screenSize">
+                                    <option value="96x65">96x65</option>
+                                    <option value="96x96">96x96</option>
+                                    <option value="104x80">104x80</option>
+                                    <option value="128x128">128x128</option>
+                                    <option value="132x176">132x176</option>
+                                    <option value="128x160">128x160</option>
+                                    <option value="176x208">176x208</option>
+                                    <option value="176x220">176x220</option>
+                                    <option value="208x208">208x208</option>
+                                    <option value="240x320">240x320</option>
+                                    <option value="320x240">320x240</option>
+                                    <option value="240x400">240x400</option>
+                                    <option value="352x416">352x416</option>
+                                    <option value="360x640">360x640</option>
+                                    <option value="640x360">640x360</option>
+                                    <option value="480x800">480x800</option>
+                                    <option value="800x480">800x480</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                                <div class="custom-size-inputs" id="edit-custom-size-inputs">
+                                    <input type="number" placeholder="宽" id="customWidth" min="1" />
+                                    <input type="number" placeholder="高" id="customHeight" min="1" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fontSize">字体大小：</label>
+                                <select id="fontSize">
+                                    <option value="0">动态</option>
+                                    <option value="1">小</option>
+                                    <option value="2">中</option>
+                                    <option value="3">大</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dgFormat">DirectGraphics 原生格式：</label>
+                                <select id="dgFormat">
+                                    <option value="444">444 RGB</option>
+                                    <option value="4444">4444 ARGB</option>
+                                    <option value="565">565 ARGB</option>
+                                    <option value="888">888 ARGB</option>
+                                    <option value="8888">8888 ARGB</option>
+                                </select>
+                            </div>
+                            <label class="checkbox"><input type="checkbox" name="enableSound" /> 开启声音</label>
+                            <label class="checkbox"><input type="checkbox" name="rotate" /> 旋转屏幕</label>
+                            <label class="checkbox"><input type="checkbox" name="forceFullscreen" /> 强制全屏</label>
+                            <label class="checkbox"><input type="checkbox" name="textureDisableFilter" /> 关闭纹理过滤</label>
+                            <label class="checkbox"><input type="checkbox" name="queuedPaint" /> 排队绘制（游戏卡死时有用）</label>
+                        </div>
+
+                        <details class="advanced-settings">
+                            <summary><h3>高级设置</h3></summary>
+                            <div class="form-group">
+                                <label for="editAppProps">附加应用属性：</label>
+                                <textarea id="editAppProps" placeholder="例如：key: value，每行一个"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="editSysProps">附加系统属性：</label>
+                                <textarea id="editSysProps" placeholder="例如：key: value，每行一个"></textarea>
+                            </div>
+                        </details>
+                    </div>
+
+                    <button class="save-button" id="add-save-button">添加游戏</button>
+                </div>
+            </section>
+
+            <!-- 推荐游戏 -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>推荐游戏</h2>
+                    <span class="muted">下载后回到本页上传试玩</span>
+                </div>
+                <ul id="recommendedList" class="rec-grid"></ul>
+            </section>
+
+            <!-- 按键说明 -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>按键说明</h2>
+                </div>
+                <div class="keyboard-controls card">
+                    <h3>电脑（物理键盘）</h3>
+                    <table>
+                        <tr>
+                            <td><span class="key">Esc</span></td>
+                            <td>进入 / 退出模拟器设置</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">F1</span> 或 <span class="key">Q</span></td>
+                            <td>左软键</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">F2</span> 或 <span class="key">W</span></td>
+                            <td>右软键</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">0</span> ~ <span class="key">9</span></td>
+                            <td>数字键</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">E</span> / <span class="key">R</span></td>
+                            <td>* / #</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td>
+                            <td>方向键</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">回车</span></td>
+                            <td>确认键（OK）</td>
+                        </tr>
+                    </table>
+                    <p>手机端会自动显示屏幕上的虚拟按键（数字键 + 方向键 + 左右软键），直接用手指点按。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer"></footer>
+
+    <script src="../js/common.js"></script>
+    <script>
+        // GPLv3 署名：仅在本页页脚追加，和站点页脚排版保持一致。
+        (function () {
+            var footer = document.querySelector('.site-footer');
+            if (!footer) return;
+            var p = document.createElement('p');
+            p.className = 'gpl-note';
+            p.innerHTML = '模拟器基于 <a href="https://github.com/zb3/freej2me-web" target="_blank" rel="noopener">freej2me-web</a>（GPLv3 开源）实现 · 游戏与存档仅保存在你的本地浏览器';
+            footer.appendChild(p);
+        })();
+    </script>
+    <script>
+        // 推荐游戏：读取 recommended.json 渲染卡片，图标沿用站点 Cloudinary 游戏图标。
+        (function () {
+            var list = document.getElementById('recommendedList');
+            if (!list) return;
+            var ICON = 'https://res.cloudinary.com/exnfmed6/image/upload/jarsite_games_icon/icon_game.';
+            var NO_IMAGE = '../img/none.png';
+            function esc(s) {
+                return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                });
+            }
+            fetch('recommended.json', { cache: 'no-store' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        list.innerHTML = '<li class="rec-empty">暂无推荐，敬请期待</li>';
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function (g) {
+                        var id = esc(g.id), name = esc(g.name), desc = esc(g.desc);
+                        html += '<li class="rec-card card"><a href="../g/s' + id + '.html" target="_blank" rel="noopener">' +
+                            '<img src="' + ICON + id + '.png" alt="' + name + '" loading="lazy" onerror="this.onerror=null;this.src=\'' + NO_IMAGE + '\';">' +
+                            '<span class="rec-body"><span class="rec-name">' + name + '</span>' +
+                            '<span class="rec-desc">' + desc + '</span></span>' +
+                            '<span class="rec-go">去下载 ›</span></a></li>';
+                    });
+                    list.innerHTML = html;
+                })
+                .catch(function () {
+                    list.innerHTML = '<li class="rec-empty">推荐加载失败</li>';
+                });
+        })();
+    </script>
+    <script src="cj/loader.js"></script>
+    <script type="module" src="src/launcher.js"></script>
+    <script>
+        // 注册 Service Worker：缓存完整 jar，二次访问时 Range 分片走本地缓存
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(function () {});
+        }
+    </script>
+</body>
+</html>
